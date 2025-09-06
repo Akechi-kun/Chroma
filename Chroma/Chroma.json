@@ -1,0 +1,17 @@
+{
+	"Author": "Akechi",
+	"Name": "Chroma",
+	"InternalName": "Chroma",
+	"Punchline": "Taste the rainbow.",
+	"Description": "Chroma is a simple accessibility plugin for modifying the color of Area-of-Effect indicators, heavily inspired by chripxiv's `GoodOmen` plugin.\n\nInstall, pick your color, and that's it!",
+	"AssemblyVersion": "0.0.0.1",
+	"RepoUrl": "https://puni.sh/api/repository/akechi",
+	"ApplicableVersion": "any",
+	"DalamudApiLevel": 13,
+	"Tags": [
+		"accessibility",
+		"omens",
+		"indicators",
+		"color"
+	]
+}
