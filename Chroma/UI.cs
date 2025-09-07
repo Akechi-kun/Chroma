@@ -4,11 +4,8 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
 
 namespace Chroma;
 
@@ -39,7 +36,6 @@ public class ConfigWindow : Window
         {
             _manager.Enabled = _config.Enabled;
         }
-
         ImGui.Spacing();
         ImGui.Separator();
         ImGui.Spacing();
@@ -86,11 +82,7 @@ public class ConfigWindow : Window
             _config.RainbowMode = rainbow;
         }
         ImGui.SameLine();
-        ImGuiComponents.HelpMarker(
-            "Override the color for a specific duty.\n" +
-            "When a duty entry is added, enabled, and you are inside that duty, " +
-            "its assigned color will take precedence over the global color setting."
-        );
+        ImGuiComponents.HelpMarker("This will randomize the colors of your omens/indicators.");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(150);
         ImGui.SliderFloat("Speed", ref speed, 0.01f, 0.4f, "%.2fx");
@@ -165,9 +157,6 @@ public class DutyWindow : Window
 
     public override void Draw()
     {
-        ImGui.TextColored(0xFFFFDCEB, $"Jobs");
-        ImGuiComponents.HelpMarker("Select the jobs you wish to use Orbwalker's movement locking features on. Not all jobs have cast times, but if you have the extra features enabled for the general actions it will apply to those jobs.");
-        ImGui.Separator();
         using ImRaii.IEndObject table = ImRaii.Table("##DutyTable", 4,
             ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg |
             ImGuiTableFlags.BordersOuter | ImGuiTableFlags.BordersV |
