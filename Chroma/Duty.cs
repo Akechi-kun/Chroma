@@ -44,19 +44,12 @@ public class DutyOverride(IDataManager data)
     public string GetDutyName(ushort id)
     {
         ContentFinderCondition? row = GetDutyRow(id);
-        if (row!.Value.RowId == default)
-        {
+        if (row?.RowId == default)
             return "Unknown";
-        }
 
-        string name = row.Value.Name.ExtractText();
-        if (name.StartsWith("The ", StringComparison.InvariantCultureIgnoreCase))
-        {
-            name = char.ToUpper(name[0]) + name[1..];
-        }
-
-        return name;
+        return FormatDutyName(row!.Value.Name.ExtractText());
     }
+
     public ContentFinderCondition? GetDutyRow(ushort id) => _content.GetRow(id);
 
     private IEnumerable<ContentFinderCondition> GetDuties() => _content.Where(entry =>
@@ -65,7 +58,19 @@ public class DutyOverride(IDataManager data)
         return type is (>= 2 and <= 5) or 9 or 10 or 21 or 26 or 28 or 30;
     });
 
-    private static bool DrawItem(ContentFinderCondition row, bool focus) => ImGui.Selectable(row.Name.ExtractText(), focus);
+    private static string FormatDutyName(string rawName)
+    {
+        if (rawName.StartsWith("The ", StringComparison.InvariantCultureIgnoreCase))
+            return char.ToUpper(rawName[0]) + rawName[1..];
+
+        return rawName;
+    }
+
+    private static bool DrawItem(ContentFinderCondition row, bool focus)
+    {
+        string name = FormatDutyName(row.Name.ExtractText());
+        return ImGui.Selectable(name, focus);
+    }
     private static bool SearchPredicate(ContentFinderCondition row, string query) => row.Name.ExtractText().Contains(query, StringComparison.InvariantCultureIgnoreCase);
 }
 public class PopupList<T>(string id, Func<T, bool, bool> drawItem)

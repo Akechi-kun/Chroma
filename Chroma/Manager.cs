@@ -63,16 +63,16 @@ public class Commands(ICommandManager cmd, ConfigManager ui, Manager mgr, Config
         _cmds.AddHandler(CommandName, new CommandInfo(HandleCommand)
         {
             HelpMessage = "Opens the UI. \n" +
-            "/chroma enable -> Enables Chroma \n" +
-            "/chroma disable -> Disables Chroma \n" +
-            "/chroma red -> Sets color to red \n" +
-            "/chroma green -> Sets color to green \n" +
-            "/chroma blue -> Sets color to blue \n" +
-            "/chroma yellow -> Sets color to blue \n" +
-            "/chroma purple -> Sets color to blue \n" +
-            "/chroma pink -> Sets color to blue \n" +
-            "/chroma rainbow -> Sets color to rainbow \n" +
-            "/chroma white -> Sets color to white"
+            "/chroma enable -> Enables Chroma. \n" +
+            "/chroma disable -> Disables Chroma. \n" +
+            "/chroma red -> Sets global color to red. \n" +
+            "/chroma green -> Sets global color to green. \n" +
+            "/chroma blue -> Sets global color to blue. \n" +
+            "/chroma yellow -> Sets global color to yellow. \n" +
+            "/chroma purple -> Sets global color to purple. \n" +
+            "/chroma pink -> Sets global color to pink. \n" +
+            "/chroma white -> Sets global color to white.\n" +
+            "/chroma rainbow -> Sets global color to rainbow."
         });
     }
 
@@ -132,18 +132,18 @@ public class Commands(ICommandManager cmd, ConfigManager ui, Manager mgr, Config
             _config.Color = new Vector4(1.0f, 0.75f, 0.8f, 1.0f);
             return;
         }
-        if (args == "rainbow")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.RainbowMode = true;
-            return;
-        }
         if (args == "white")
         {
             _manager.Enabled = true;
             _config.RainbowMode = false;
             _config.Color = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+            return;
+        }
+        if (args == "rainbow")
+        {
+            _manager.Enabled = true;
+            _config.RainbowMode = false;
+            _config.RainbowMode = true;
             return;
         }
 
