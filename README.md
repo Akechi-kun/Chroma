@@ -3,9 +3,7 @@
 
 # Chroma
 
-### Accesibility plugin for FFXIV that changes color of Area-of-Effect omens/indicators.<br/>
- Repo: `https://puni.sh/api/repository/akechi`
-
-<a href="https://discord.gg/Zzrcc8kmvy" alt="Discord"> <img src="https://discordapp.com/api/guilds/1001823907193552978/embed.png?style=banner2" /></a>
+ Accessibility plugin for Final Fantasy XIV that changes color of Area-of-Effect omens/indicators.<br/><br/>
+  *Repository*: `https://puni.sh/api/repository/akechi`
 
 </div>
