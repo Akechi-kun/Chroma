@@ -11,18 +11,18 @@ public sealed class Chroma : IDalamudPlugin
     private readonly ConfigManager _ui;
     private readonly Commands _cmds;
 
-    public Chroma(IDalamudPluginInterface pluginInterface, IGameInteropProvider interop, ICommandManager cmd)
+    public Chroma(IDalamudPluginInterface pluginInterface, IGameInteropProvider interop, ICommandManager cmds, IDataManager data, IClientState clientState)
     {
-        Hooks hooks = new Hooks(interop);
-
+        Hooks hooks = new(interop);
         _pluginInterface = pluginInterface;
         _config = pluginInterface.GetPluginConfig() as Config ?? new Config();
-        _manager = new Manager(_config, hooks);
+        _manager = new Manager(_config, hooks, clientState);
         _manager.Initialize();
-
-        ConfigWindow cfgWindow = new ConfigWindow(_pluginInterface, _config, _manager);
-        _ui = new ConfigManager(cfgWindow, pluginInterface.UiBuilder);
-        _cmds = new Commands(cmd, _ui, _manager, _config);
+        DutyOverride dutyOverride = new(data);
+        DutyWindow dutyWindow = new(pluginInterface, _config, dutyOverride, clientState);
+        ConfigWindow cfgWindow = new(pluginInterface, _config, _manager, dutyWindow);
+        _ui = new ConfigManager(cfgWindow, dutyWindow, pluginInterface.UiBuilder);
+        _cmds = new Commands(cmds, _ui, _manager, _config);
         _cmds.Register();
     }
 

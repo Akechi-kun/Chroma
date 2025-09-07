@@ -5,10 +5,11 @@ using System.Numerics;
 
 namespace Chroma;
 
-public class Manager(Config config, Hooks hooks) : IDisposable
+public class Manager(Config config, Hooks hooks, IClientState clientState) : IDisposable
 {
     private readonly Config _config = config;
     private readonly Hooks _hooks = hooks;
+    private readonly IClientState _clientState = clientState;
 
     public bool Enabled
     {
@@ -28,16 +29,23 @@ public class Manager(Config config, Hooks hooks) : IDisposable
 
     private unsafe void OnSpawn(VFXResource* instance)
     {
-        if (instance->Color.Equals(Vector4.One) && _config.Enabled)
+        if (!_config.Enabled)
         {
-            instance->Color = _config.Color;
+            return;
+        }
+
+        ushort territory = _clientState.TerritoryType;
+        Vector4 color = _config.GetActiveColor(territory);
+        if (instance->Color.Equals(Vector4.One))
+        {
+            instance->Color = color;
         }
     }
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
         _hooks.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
 
@@ -79,60 +87,69 @@ public class Commands(ICommandManager cmd, ConfigManager ui, Manager mgr, Config
         if (args == "disable")
         {
             _manager.Enabled = false;
+            _config.RainbowMode = false;
             return;
         }
         if (args == "red")
         {
             _manager.Enabled = true;
+            _config.RainbowMode = false;
             _config.Color = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
             return;
         }
         if (args == "green")
         {
             _manager.Enabled = true;
+            _config.RainbowMode = false;
             _config.Color = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
             return;
         }
         if (args == "blue")
         {
             _manager.Enabled = true;
+            _config.RainbowMode = false;
             _config.Color = new Vector4(0.0f, 0.0f, 1.0f, 1.0f);
             return;
         }
         if (args == "yellow")
         {
             _manager.Enabled = true;
+            _config.RainbowMode = false;
             _config.Color = new Vector4(1.0f, 1.0f, 0.0f, 1.0f);
             return;
         }
         if (args == "purple")
         {
             _manager.Enabled = true;
+            _config.RainbowMode = false;
             _config.Color = new Vector4(0.5f, 0.0f, 0.5f, 1.0f);
             return;
         }
         if (args == "pink")
         {
             _manager.Enabled = true;
+            _config.RainbowMode = false;
             _config.Color = new Vector4(1.0f, 0.75f, 0.8f, 1.0f);
             return;
         }
         if (args == "rainbow")
         {
             _manager.Enabled = true;
-            _config.Color = new Vector4(1.0f, 0.5f, 0.0f, 1.0f);
+            _config.RainbowMode = false;
+            _config.RainbowMode = true;
             return;
         }
         if (args == "white")
         {
             _manager.Enabled = true;
+            _config.RainbowMode = false;
             _config.Color = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
             return;
         }
 
         if (string.IsNullOrEmpty(args))
         {
-            _ui.ToggleConfigWindow();
+            _ui.ToggleMainWindow();
             return;
         }
     }
