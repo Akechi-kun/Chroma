@@ -1,5 +1,6 @@
 <div align="center">
-<img width="250" height="250" alt="chroma" src="https://github.com/user-attachments/assets/f493033c-f928-40f4-8278-5846976e2f59" />
+<img width="225" height="225" alt="chroma" src="https://github.com/user-attachments/assets/7e983db9-5a09-4623-a5ac-b34ff4231758" />
+
 
 # Chroma
 
