@@ -10,6 +10,7 @@ namespace Chroma;
 public class Config : IPluginConfiguration
 {
     public int Version { get; set; } = 1;
+    public float Speed { get; set; } = 0.05f;
     public bool Enabled = true;
     public bool GlobalColor = false;
     public bool ShowDutyWindow = false;

@@ -26,6 +26,8 @@ public class ConfigWindow : Window
         _dutyWindow = dutyWindow;
         Size = new Vector2(350, 200);
         Flags |= ImGuiWindowFlags.AlwaysAutoResize;
+        rainbow = _config.RainbowMode;
+        speed = _config.Speed;
     }
 
     public override void OnClose() => _pluginInterface.SavePluginConfig(_config);
@@ -85,7 +87,10 @@ public class ConfigWindow : Window
         ImGuiComponents.HelpMarker("This will randomize the colors of your omens/indicators.");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(150);
-        ImGui.SliderFloat("Speed", ref speed, 0.01f, 0.4f, "%.2fx");
+        if (ImGui.SliderFloat("Speed", ref speed, 0.01f, 0.4f, "%.2fx"))
+        {
+            _config.Speed = speed;
+        }
         if (rainbow)
         {
             float t = (float)ImGui.GetTime();
