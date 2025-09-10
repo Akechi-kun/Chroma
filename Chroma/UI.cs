@@ -6,8 +6,10 @@ using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using Lumina.Excel.Sheets;
 using Pictomancy;
+using System;
 using System.Linq;
 using System.Numerics;
+using Icon = Dalamud.Interface.FontAwesomeIcon;
 
 namespace Chroma;
 
@@ -41,6 +43,7 @@ public class ConfigWindow : Window
     private float testDonutInnerRadius = 0.1f;
     private float testDonutOuterRadius = 0.2f;
     private bool testCustomActive = false;
+    private Vector4 titleColor = new(0.678f, 0.847f, 0.902f, 1);
     //private bool testLockOnActive = false;
     //private float testLockOnScale = 1f;
 
@@ -53,7 +56,7 @@ public class ConfigWindow : Window
         _clientState = clientState;
         _data = data;
         _log = log;
-        Size = new Vector2(350, 470);
+        Size = new Vector2(340, 510);
         Flags |= ImGuiWindowFlags.AlwaysAutoResize;
         rainbow = _config.RainbowMode;
         speed = _config.Speed;
@@ -83,22 +86,24 @@ public class ConfigWindow : Window
         {
             _manager.Enabled = _config.Enabled;
         }
+        ImGui.SameLine(240, 0);
+        DrawSupport();
         ImGui.Spacing();
         ImGui.Separator();
         ImGui.Spacing();
-        ImGui.TextColored(0xFFFFDCEB, "Chroma Settings");
+        ImGui.TextColored(titleColor, "Chroma Settings");
         ImGuiGroup.BeginGroupBox();
         DrawColorMenu();
         ImGui.Spacing();
         DrawRainbowMode();
         ImGuiGroup.EndGroupBox();
         ImGui.Spacing();
-        ImGui.TextColored(0xFFFFDCEB, "Duty-specific Overrides");
+        ImGui.TextColored(titleColor, "Duty-specific Overrides");
         ImGuiGroup.BeginGroupBox();
         DrawDutyOverrides();
         ImGuiGroup.EndGroupBox();
         ImGui.Spacing();
-        ImGui.TextColored(0xFFFFDCEB, "Testing");
+        ImGui.TextColored(titleColor, "Testing");
         ImGuiGroup.BeginGroupBox();
         DrawOmenTesting();
         ImGuiGroup.EndGroupBox();
@@ -143,7 +148,9 @@ public class ConfigWindow : Window
             _config.OmenColor = new Vector4(1, 0, 1, 1);
         }
         ImGui.Spacing();
-        if (ImGui.Checkbox("Include Friendly Omens?", ref includeFriendly))
+        ImGui.Separator();
+        ImGui.Spacing();
+        if (ImGui.Checkbox("Include Friendly Omens", ref includeFriendly))
         {
             _config.IncludeFriendly = includeFriendly;
         }
@@ -160,7 +167,6 @@ public class ConfigWindow : Window
         ImGuiComponents.HelpMarker("This will randomize the colors of your omens/indicators.");
         if (rainbow)
         {
-            //draw speed slider
             ImGui.Indent();
             ImGui.SetNextItemWidth(150);
             if (ImGui.SliderFloat("Speed", ref speed, 0.01f, 0.4f, "%.2f"))
@@ -168,8 +174,6 @@ public class ConfigWindow : Window
                 _config.Speed = speed;
             }
             ImGui.Unindent();
-
-            //rainbow logic
             var a = _config.OmenColor.W;
             var t = (float)ImGui.GetTime();
             var hue = (t * speed) % 1.0f;
@@ -180,7 +184,7 @@ public class ConfigWindow : Window
     }
     private void DrawDutyOverrides()
     {
-        if (ImGui.Button("Open Duty Overrides Window"))
+        if (ImGuiComponents.IconButtonWithText(Icon.Bullseye, "Open Duty Overrides Window"))
         {
             _dutyWindow.Toggle();
             _pluginInterface.SavePluginConfig(_config);
@@ -198,8 +202,8 @@ public class ConfigWindow : Window
         ImGuiComponents.HelpMarker("This is for testing how your omens will appear.\nIf enabled, the omen will appear on your character until cleared with the 'Clear' button, or a different omen is selected.");
         if (_config.TestOmenEnabled && (testCircleActive == true || testConeActive == true || testLineActive == true || testDonutActive == true || testCustomActive == true))
         {
-            ImGui.SameLine();
-            if (ImGui.Button("Clear"))
+            ImGui.SameLine(230, 0);
+            if (ImGuiComponents.IconButtonWithText(Icon.Explosion, "Clear"))
             {
                 testCircleActive = false;
                 testLineActive = false;
@@ -210,9 +214,7 @@ public class ConfigWindow : Window
                 PictoService.VfxRenderer.Dispose();
             }
             ImGui.SameLine();
-            ImGuiComponents.HelpMarker(
-                "If you can see this 'Clear' button, it means there is currently an omen active from testing.\n" +
-                "Use this button to clear any active omens that are currently being displayed.");
+            ImGuiComponents.HelpMarker("If you can see this 'Clear' button, it means there is currently an omen active from testing.\nUse this button to clear any active omens that are currently being displayed.");
         }
         ImGui.Spacing();
         if (_config.TestOmenEnabled)
@@ -280,63 +282,79 @@ public class ConfigWindow : Window
             if (testCircleActive)
             {
                 ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
                 ImGui.SetNextItemWidth(150);
-                if (ImGui.SliderFloat("Radius", ref testCircleRadius, 1f, 15f, "%.1f"))
+                if (ImGui.SliderFloat("Length", ref testCircleRadius, 1f, 15f, "%.1f"))
                 {
                     _config.TestCircleRadius = testCircleRadius;
                 }
-                ImGui.Spacing();
+                ImGui.SameLine();
+                ImGuiComponents.HelpMarker("The length the omen being tested.");
                 PictoService.VfxRenderer.AddCircle($"{player!.EntityId}", player.Position, testCircleRadius, _config.OmenColor);
             }
             if (testConeActive)
             {
+                ImGui.Spacing();
+                ImGui.Separator();
                 ImGui.Spacing();
                 ImGui.SetNextItemWidth(150);
                 if (ImGui.SliderFloat("Radius", ref testConeRadius, 1f, 35f, "%.1f"))
                 {
                     _config.TestConeRadius = testConeRadius;
                 }
+                ImGui.SameLine();
+                ImGuiComponents.HelpMarker("The length the omen being tested.");
                 ImGui.SetNextItemWidth(150);
                 if (ImGui.SliderFloat("Rotation", ref testConeRotation, 1f, 7.3f, "%.001f"))
                 {
                     _config.TestConeRotation = testConeRotation;
                 }
+                ImGui.SameLine();
+                ImGuiComponents.HelpMarker("The direction the omen being tested is facing.");
                 ImGui.SetNextItemWidth(150);
                 if (ImGui.SliderInt("Angle Width", ref angleIndex, 1, AllowedAngles.Length - 1))
                 {
                     testConeAngleWidth = AllowedAngles[angleIndex];
                     _config.TestConeAngleWidth = testConeAngleWidth;
                 }
-                ImGui.SameLine();
+                ImGui.SameLine(242, 0);
                 ImGui.Text($"({AllowedAngles[angleIndex]}°)");
-
+                ImGuiComponents.HelpMarker("The cone-angle width of the omen being tested.");
                 PictoService.VfxRenderer.AddCone($"{player!.EntityId}", player.Position, testConeRadius, testConeRotation, testConeAngleWidth, _config.OmenColor);
             }
             if (testLineActive)
             {
+                ImGui.Spacing();
+                ImGui.Separator();
                 ImGui.Spacing();
                 ImGui.SetNextItemWidth(150);
                 if (ImGui.SliderFloat("Length", ref testLineLength, 1f, 50, "%.1f"))
                 {
                     _config.TestLineLength = testLineLength;
                 }
-
+                ImGui.SameLine();
+                ImGuiComponents.HelpMarker("The length the omen being tested.");
                 ImGui.SetNextItemWidth(150);
                 if (ImGui.SliderFloat("Width", ref testLineWidth, 1f, 15f, "%.1f"))
                 {
                     _config.TestLineWidth = testLineWidth;
                 }
-
+                ImGui.SameLine();
+                ImGuiComponents.HelpMarker("The width the omen being tested.");
                 ImGui.SetNextItemWidth(150);
                 if (ImGui.SliderFloat("Rotation", ref testLineRotation, 1f, 7.3f, "%.001f"))
                 {
                     _config.TestLineRotation = testLineRotation;
                 }
-
+                ImGui.SameLine();
+                ImGuiComponents.HelpMarker("The direction the omen being tested is facing.");
                 PictoService.VfxRenderer.AddLine($"{player!.EntityId}", player.Position, testLineLength, testLineWidth, testLineRotation, _config.OmenColor);
             }
             if (testDonutActive)
             {
+                ImGui.Spacing();
+                ImGui.Separator();
                 ImGui.Spacing();
                 ImGui.SetNextItemWidth(150);
                 if (ImGui.SliderFloat("Scale", ref testDonutInnerRadius, 0.1f, 25f, "%.1f"))
@@ -345,12 +363,21 @@ public class ConfigWindow : Window
                     _config.TestDonutInnerRadius = testDonutInnerRadius;
                     _config.TestDonutOuterRadius = testDonutOuterRadius;
                 }
+                ImGui.SameLine();
+                ImGuiComponents.HelpMarker("The scaling of the omen being tested.\nDue to there being multiple instances where the omen will just not show, the inner and outer radiuses are locked into a scaling where it is always visible.");
                 ImGui.Text($"Inner Radius: {testDonutInnerRadius:0.0}");
+                ImGui.SameLine();
+                ImGuiComponents.HelpMarker("The inner radius of the omen being tested (inner safe zone).");
                 ImGui.Text($"Outer Radius: {testDonutOuterRadius:0.0}");
+                ImGui.SameLine();
+                ImGuiComponents.HelpMarker("The outer radius of the omen being tested (outer unsafe zone).");
                 PictoService.VfxRenderer.AddDonut($"{player!.EntityId}", player.Position, testDonutInnerRadius, testDonutOuterRadius, _config.OmenColor);
             }
             if (testCustomActive)
             {
+                ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
                 var omenKeys = _data.GetExcelSheet<Omen>().Select(o => o.Path.ToMacroString()).ToArray();
                 var selectedIndex = (_config.SelectedOmenIndex >= 0 && _config.SelectedOmenIndex < omenKeys.Length) ? _config.SelectedOmenIndex : 0;
                 var selectedOmenName = omenKeys[selectedIndex];
@@ -375,10 +402,9 @@ public class ConfigWindow : Window
                     ImGui.EndCombo();
                 }
                 ImGui.SameLine();
-                ImGui.TextColored(0xFFFFDCEB, "Omen Selection");
+                ImGui.Text("Omen Selection");
                 ImGui.SameLine();
                 ImGuiComponents.HelpMarker("The actual names of these omens are unknown, so unfortunately we're left with these keys as our only source of searching through to find any specific omens.");
-
                 PictoService.VfxRenderer.AddOmen(player!.EntityId.ToString(), selectedOmenName, player.Position, new Vector3(3), 0, _config.OmenColor);
             }
 
@@ -400,6 +426,71 @@ public class ConfigWindow : Window
             PictoService.VfxRenderer.Dispose();
         }
 
+    }
+    private void DrawSupport()
+    {
+        if (ImGuiComponents.IconButton(Icon.Bug))
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://github.com/Akechi-kun/Chroma/issues", UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                _log.Error($"Failed to open GitHub Issues page: {ex.Message}");
+            }
+        }
+        if (ImGui.IsMouseClicked(ImGuiMouseButton.Right))
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "https://github.com/Akechi-kun/Chroma",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _log.Error($"Failed to open GitHub repo: {ex.Message}");
+            }
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("Report Issue");
+        }
+        ImGui.SameLine();
+        if (ImGuiComponents.IconButton(Icon.Star))
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://github.com/Akechi-kun/Chroma", UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                _log.Error($"Failed to open GitHub link: {ex.Message}");
+            }
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("Star on GitHub");
+        }
+        ImGui.SameLine();
+        if (ImGuiComponents.IconButton(Icon.Heart))
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = "https://ko-fi.com/akechikun", UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                _log.Error($"Failed to open Sponsor link: {ex.Message}");
+            }
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("Sponsor");
+        }
     }
     private static Vector4 HsvToRgb(float h, float s, float v)
     {

@@ -4,7 +4,7 @@
 	"InternalName": "Chroma",
 	"Punchline": "Taste the rainbow.",
 	"Description": "Chroma is a simple accessibility plugin for modifying the color of Area-of-Effect indicators.",
-	"AssemblyVersion": "1.1.0.0",
+	"AssemblyVersion": "1.1.0.1",
 	"IconUrl": "https://raw.githubusercontent.com/Akechi-kun/Chroma/refs/heads/main/Chroma/chroma.png",
 	"RepoUrl": "https://github.com/Akechi-kun/Chroma",
 	"ApplicableVersion": "any",
