@@ -1,161 +1,46 @@
-﻿using Dalamud.Game.Command;
-using Dalamud.Plugin.Services;
+﻿using Dalamud.Plugin.Services;
+using SourOmen.Structs;
 using System;
-using System.Numerics;
 
 namespace Chroma;
 
-public class Manager(Config config, Hooks hooks, IClientState clientState) : IDisposable
+public class Manager(Config config, Util Util, IClientState clientState) : IDisposable
 {
     private readonly Config _config = config;
-    private readonly Hooks _hooks = hooks;
+    private readonly Util _util = Util;
     private readonly IClientState _clientState = clientState;
 
     public bool Enabled
     {
-        get => _hooks.Enabled;
+        get => _util.Enabled;
         set
         {
             _config.Enabled = value;
-            _hooks.SetEnabled(value);
+            _util.SetEnabled(value);
         }
     }
 
     public unsafe void Initialize()
     {
-        _hooks.SetEnabled(_config.Enabled);
-        _hooks.OnSpawn += OnSpawn;
+        _util.SetEnabled(_config.Enabled);
+        _util.OnSpawn += OnSpawn;
     }
 
-    private unsafe void OnSpawn(VFXResource* instance)
+    private unsafe void OnSpawn(VfxResourceInstance* instance)
     {
         if (!_config.Enabled)
         {
             return;
         }
 
-        ushort territory = _clientState.TerritoryType;
-        Vector4 color = _config.GetActiveColor(territory);
-        if (instance->Color.Equals(Vector4.One))
-        {
-            instance->Color = color;
-        }
+        var territory = _clientState.TerritoryType;
+        var color = _config.GetActiveColor(territory);
+        instance->Color = color;
     }
 
     public void Dispose()
     {
-        _hooks.Dispose();
-        GC.SuppressFinalize(this);
-    }
-}
-
-public class Commands(ICommandManager cmd, ConfigManager ui, Manager mgr, Config cfg) : IDisposable
-{
-    private const string CommandName = "/chroma";
-
-    private readonly ICommandManager _cmds = cmd;
-    private readonly ConfigManager _ui = ui;
-    private readonly Manager _manager = mgr;
-    private readonly Config _config = cfg;
-
-    public void Register()
-    {
-        _cmds.AddHandler(CommandName, new CommandInfo(HandleCommand)
-        {
-            HelpMessage = "Opens the UI. \n" +
-            "/chroma enable -> Enables Chroma. \n" +
-            "/chroma disable -> Disables Chroma. \n" +
-            "/chroma red -> Sets global color to red. \n" +
-            "/chroma green -> Sets global color to green. \n" +
-            "/chroma blue -> Sets global color to blue. \n" +
-            "/chroma yellow -> Sets global color to yellow. \n" +
-            "/chroma purple -> Sets global color to purple. \n" +
-            "/chroma pink -> Sets global color to pink. \n" +
-            "/chroma white -> Sets global color to white.\n" +
-            "/chroma rainbow -> Sets global color to rainbow."
-        });
-    }
-
-    private void HandleCommand(string command, string args)
-    {
-        if (args == "enable")
-        {
-            _manager.Enabled = true;
-            return;
-        }
-
-        if (args == "disable")
-        {
-            _manager.Enabled = false;
-            _config.RainbowMode = false;
-            return;
-        }
-        if (args == "red")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.Color = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-            return;
-        }
-        if (args == "green")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.Color = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
-            return;
-        }
-        if (args == "blue")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.Color = new Vector4(0.0f, 0.0f, 1.0f, 1.0f);
-            return;
-        }
-        if (args == "yellow")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.Color = new Vector4(1.0f, 1.0f, 0.0f, 1.0f);
-            return;
-        }
-        if (args == "purple")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.Color = new Vector4(0.5f, 0.0f, 0.5f, 1.0f);
-            return;
-        }
-        if (args == "pink")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.Color = new Vector4(1.0f, 0.75f, 0.8f, 1.0f);
-            return;
-        }
-        if (args == "white")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.Color = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-            return;
-        }
-        if (args == "rainbow")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.RainbowMode = true;
-            return;
-        }
-
-        if (string.IsNullOrEmpty(args))
-        {
-            _ui.ToggleMainWindow();
-            return;
-        }
-    }
-    public void Dispose()
-    {
-        _cmds.RemoveHandler(CommandName);
+        _util.Dispose();
         GC.SuppressFinalize(this);
     }
 }
