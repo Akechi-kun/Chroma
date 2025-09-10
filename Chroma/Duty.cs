@@ -18,10 +18,9 @@ public class DutyOverride(IDataManager data)
 
     public void Draw(ref ushort id)
     {
-        string name = id == 0 ? "Select duty..." : GetDutyName(id);
-
+        var name = id == 0 ? "Select duty..." : GetDutyName(id);
         bool opening;
-        using (ImRaii.IEndObject combo = ImRaii.Combo("##DutyOverride", name))
+        using (var combo = ImRaii.Combo("##DutyOverride", name))
         {
             opening = combo.Success;
             if (opening)
@@ -35,7 +34,7 @@ public class DutyOverride(IDataManager data)
         }
 
         _duties ??= [.. GetDuties()];
-        if (_popupList.Draw(_duties, out ContentFinderCondition selected))
+        if (_popupList.Draw(_duties, out var selected))
         {
             id = (ushort)selected!.RowId;
         }
@@ -43,32 +42,23 @@ public class DutyOverride(IDataManager data)
 
     public string GetDutyName(ushort id)
     {
-        ContentFinderCondition? row = GetDutyRow(id);
-        if (row?.RowId == default)
-            return "Unknown";
-
-        return FormatDutyName(row!.Value.Name.ExtractText());
+        var row = GetDutyRow(id);
+        return row?.RowId == default ? "Unknown" : FormatDutyName(row!.Value.Name.ExtractText());
     }
 
     public ContentFinderCondition? GetDutyRow(ushort id) => _content.GetRow(id);
 
     private IEnumerable<ContentFinderCondition> GetDuties() => _content.Where(entry =>
     {
-        uint type = entry.ContentType.RowId;
+        var type = entry.ContentType.RowId;
         return type is (>= 2 and <= 5) or 9 or 10 or 21 or 26 or 28 or 30;
     });
 
-    private static string FormatDutyName(string rawName)
-    {
-        if (rawName.StartsWith("The ", StringComparison.InvariantCultureIgnoreCase))
-            return char.ToUpper(rawName[0]) + rawName[1..];
-
-        return rawName;
-    }
+    private static string FormatDutyName(string rawName) => rawName.StartsWith("The ", StringComparison.InvariantCultureIgnoreCase) ? char.ToUpper(rawName[0]) + rawName[1..] : rawName;
 
     private static bool DrawItem(ContentFinderCondition row, bool focus)
     {
-        string name = FormatDutyName(row.Name.ExtractText());
+        var name = FormatDutyName(row.Name.ExtractText());
         return ImGui.Selectable(name, focus);
     }
     private static bool SearchPredicate(ContentFinderCondition row, string query) => row.Name.ExtractText().Contains(query, StringComparison.InvariantCultureIgnoreCase);
@@ -97,7 +87,7 @@ public class PopupList<T>(string id, Func<T, bool, bool> drawItem)
     public bool Draw(IEnumerable<T> items, out T? selected)
     {
         selected = default;
-        bool result = false;
+        var result = false;
 
         if (_isOpen && ImGui.BeginPopup(_id))
         {
@@ -107,10 +97,10 @@ public class PopupList<T>(string id, Func<T, bool, bool> drawItem)
                 ImGui.InputTextWithHint("##Search", "Search...", ref _searchQuery, 100);
             }
 
-            IEnumerable<T> filteredItems = _searchPredicate != null && !string.IsNullOrEmpty(_searchQuery) ? items.Where(item => _searchPredicate(item, _searchQuery)) : items;
+            var filteredItems = _searchPredicate != null && !string.IsNullOrEmpty(_searchQuery) ? items.Where(item => _searchPredicate(item, _searchQuery)) : items;
             if (ImGui.BeginChild("##List", new Vector2(300, 200), false))
             {
-                foreach (T? item in filteredItems)
+                foreach (var item in filteredItems)
                 {
                     if (_drawItem(item, false))
                     {

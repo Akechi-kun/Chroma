@@ -4,6 +4,8 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using Lumina.Excel.Sheets;
+using Pictomancy;
 using System.Linq;
 using System.Numerics;
 
@@ -15,22 +17,65 @@ public class ConfigWindow : Window
     private readonly Config _config;
     private readonly Manager _manager;
     private readonly DutyWindow _dutyWindow;
+    private readonly IClientState _clientState;
+    private readonly IDataManager _data;
+    private readonly IPluginLog _log;
+
     private bool rainbow = false;
     private float speed = 0.05f;
+    private bool includeFriendly = false;
+    private bool testEnabled = false;
+    private float testCircleRadius = 1f;
+    private bool testCircleActive = false;
+    private bool testConeActive = false;
+    private float testConeRadius = 1f;
+    private float testConeRotation = 1f;
+    private readonly int[] AllowedAngles = [10, 15, 20, 30, 45, 60, 80, 90, 120, 130, 135, 150, 180, 210, 225, 270, 360];
+    private int angleIndex = 0;
+    private int testConeAngleWidth = 0;
+    private bool testLineActive = false;
+    private float testLineLength = 1f;
+    private float testLineWidth = 1f;
+    private float testLineRotation = 1f;
+    private bool testDonutActive = false;
+    private float testDonutInnerRadius = 0.1f;
+    private float testDonutOuterRadius = 0.2f;
+    private bool testCustomActive = false;
+    //private bool testLockOnActive = false;
+    //private float testLockOnScale = 1f;
 
-    public ConfigWindow(IDalamudPluginInterface pluginInterface, Config config, Manager manager, DutyWindow dutyWindow) : base($"Chroma v{pluginInterface.Manifest.AssemblyVersion}")
+    public ConfigWindow(IDalamudPluginInterface pluginInterface, Config config, Manager manager, DutyWindow dutyWindow, IClientState clientState, IDataManager data, IPluginLog log) : base($"Chroma v{pluginInterface.Manifest.AssemblyVersion}")
     {
         _pluginInterface = pluginInterface;
         _config = config;
         _manager = manager;
         _dutyWindow = dutyWindow;
-        Size = new Vector2(350, 200);
+        _clientState = clientState;
+        _data = data;
+        _log = log;
+        Size = new Vector2(350, 470);
         Flags |= ImGuiWindowFlags.AlwaysAutoResize;
         rainbow = _config.RainbowMode;
         speed = _config.Speed;
+        includeFriendly = _config.IncludeFriendly;
+        testEnabled = _config.TestOmenEnabled;
+        testCircleRadius = _config.TestCircleRadius;
+        testCircleActive = _config.TestCircleActive;
+        testConeActive = _config.TestConeActive;
+        testConeRadius = _config.TestConeRadius;
+        testConeRotation = _config.TestConeRotation;
+        testConeAngleWidth = _config.TestConeAngleWidth;
+        testLineActive = _config.TestLineActive;
+        testLineLength = _config.TestLineLength;
+        testLineWidth = _config.TestLineWidth;
+        testLineRotation = _config.TestLineRotation;
+        testDonutActive = _config.TestDonutActive;
+        testDonutInnerRadius = _config.TestDonutInnerRadius;
+        testDonutOuterRadius = _config.TestDonutOuterRadius;
+        testCustomActive = _config.TestCustomActive;
+        //testLockOnActive = _config.TestLockOnActive;
+        //testLockOnScale = _config.TestLockOnScale;
     }
-
-    public override void OnClose() => _pluginInterface.SavePluginConfig(_config);
 
     public override void Draw()
     {
@@ -41,88 +86,328 @@ public class ConfigWindow : Window
         ImGui.Spacing();
         ImGui.Separator();
         ImGui.Spacing();
-        ImGui.ColorEdit4("Global Omen Color", ref _config.Color, ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaPreview);
+        ImGui.TextColored(0xFFFFDCEB, "Chroma Settings");
+        ImGuiGroup.BeginGroupBox();
+        DrawColorMenu();
+        ImGui.Spacing();
+        DrawRainbowMode();
+        ImGuiGroup.EndGroupBox();
+        ImGui.Spacing();
+        ImGui.TextColored(0xFFFFDCEB, "Duty-specific Overrides");
+        ImGuiGroup.BeginGroupBox();
+        DrawDutyOverrides();
+        ImGuiGroup.EndGroupBox();
+        ImGui.Spacing();
+        ImGui.TextColored(0xFFFFDCEB, "Testing");
+        ImGuiGroup.BeginGroupBox();
+        DrawOmenTesting();
+        ImGuiGroup.EndGroupBox();
+    }
+    private void DrawColorMenu()
+    {
+        ImGui.ColorEdit4("Global Omen Color", ref _config.OmenColor, ImGuiColorEditFlags.NoInputs | ImGuiColorEditFlags.AlphaPreview);
         ImGui.Spacing();
         if (ImGui.Button("Red"))
         {
             rainbow = false;
-            _config.Color = new Vector4(1, 0, 0, 1);
+            _config.OmenColor = new Vector4(1, 0, 0, 1);
         }
         ImGui.SameLine();
         if (ImGui.Button("Green"))
         {
             rainbow = false;
-            _config.Color = new Vector4(0, 1, 0, 1);
+            _config.OmenColor = new Vector4(0, 1, 0, 1);
         }
         ImGui.SameLine();
         if (ImGui.Button("Blue"))
         {
             rainbow = false;
-            _config.Color = new Vector4(0, 0, 1, 1);
+            _config.OmenColor = new Vector4(0, 0, 1, 1);
         }
         ImGui.SameLine();
         if (ImGui.Button("Yellow"))
         {
             rainbow = false;
-            _config.Color = new Vector4(1, 1, 0, 1);
+            _config.OmenColor = new Vector4(1, 1, 0, 1);
         }
         ImGui.SameLine();
         if (ImGui.Button("Purple"))
         {
             rainbow = false;
-            _config.Color = new Vector4(0.5f, 0, 0.5f, 1);
+            _config.OmenColor = new Vector4(0.5f, 0, 0.5f, 1);
         }
         ImGui.SameLine();
         if (ImGui.Button("Pink"))
         {
             rainbow = false;
-            _config.Color = new Vector4(1, 0, 1, 1);
+            _config.OmenColor = new Vector4(1, 0, 1, 1);
         }
         ImGui.Spacing();
-        if (ImGui.Checkbox("Rainbow", ref rainbow))
+        if (ImGui.Checkbox("Include Friendly Omens?", ref includeFriendly))
+        {
+            _config.IncludeFriendly = includeFriendly;
+        }
+        ImGui.SameLine();
+        ImGuiComponents.HelpMarker("If enabled, non-hostile omens/indicators (from self, party, alliance, etc.) will also be colored.");
+    }
+    private void DrawRainbowMode()
+    {
+        if (ImGui.Checkbox("Rainbow Mode", ref rainbow))
         {
             _config.RainbowMode = rainbow;
         }
         ImGui.SameLine();
         ImGuiComponents.HelpMarker("This will randomize the colors of your omens/indicators.");
-        ImGui.SameLine();
-        ImGui.SetNextItemWidth(150);
-        if (ImGui.SliderFloat("Speed", ref speed, 0.01f, 0.4f, "%.2fx"))
-        {
-            _config.Speed = speed;
-        }
         if (rainbow)
         {
-            float t = (float)ImGui.GetTime();
-            float hue = (t * speed) % 1.0f;
-            float a = _config.Color.W;
-            Vector4 rgb = HsvToRgb(hue, 1.0f, 1.0f);
+            //draw speed slider
+            ImGui.Indent();
+            ImGui.SetNextItemWidth(150);
+            if (ImGui.SliderFloat("Speed", ref speed, 0.01f, 0.4f, "%.2f"))
+            {
+                _config.Speed = speed;
+            }
+            ImGui.Unindent();
+
+            //rainbow logic
+            var a = _config.OmenColor.W;
+            var t = (float)ImGui.GetTime();
+            var hue = (t * speed) % 1.0f;
+            var rgb = HsvToRgb(hue, 1.0f, 1.0f);
             rgb.W = a;
-            _config.Color = rgb;
+            _config.OmenColor = rgb;
         }
-        ImGui.Spacing();
-        ImGui.Separator();
-        ImGui.Spacing();
-        if (ImGui.Button("Duty Overrides"))
+    }
+    private void DrawDutyOverrides()
+    {
+        if (ImGui.Button("Open Duty Overrides Window"))
         {
             _dutyWindow.Toggle();
             _pluginInterface.SavePluginConfig(_config);
         }
         ImGui.SameLine();
-        ImGuiComponents.HelpMarker(
-            "Override the color for a specific duty.\n" +
-            "When a duty entry is added, enabled, and you are inside that duty, " +
-            "its assigned color will take precedence over the global color setting."
-        );
+        ImGuiComponents.HelpMarker("Override the omen color for a specific duty.\nWhen a duty entry is added, enabled, and you are inside that duty, its assigned color will take precedence over the global color setting.");
     }
+    private void DrawOmenTesting()
+    {
+        if (ImGui.Checkbox("Enable Omen Testing", ref testEnabled))
+        {
+            _config.TestOmenEnabled = testEnabled;
+        }
+        ImGui.SameLine();
+        ImGuiComponents.HelpMarker("This is for testing how your omens will appear.\nIf enabled, the omen will appear on your character until cleared with the 'Clear' button, or a different omen is selected.");
+        if (_config.TestOmenEnabled && (testCircleActive == true || testConeActive == true || testLineActive == true || testDonutActive == true || testCustomActive == true))
+        {
+            ImGui.SameLine();
+            if (ImGui.Button("Clear"))
+            {
+                testCircleActive = false;
+                testLineActive = false;
+                testConeActive = false;
+                testDonutActive = false;
+                //testLockOnActive = false;
+                testCustomActive = false;
+                PictoService.VfxRenderer.Dispose();
+            }
+            ImGui.SameLine();
+            ImGuiComponents.HelpMarker(
+                "If you can see this 'Clear' button, it means there is currently an omen active from testing.\n" +
+                "Use this button to clear any active omens that are currently being displayed.");
+        }
+        ImGui.Spacing();
+        if (_config.TestOmenEnabled)
+        {
+            if (ImGui.Button("Circle"))
+            {
+                testCircleActive = true;
+                testConeActive = false;
+                testLineActive = false;
+                testDonutActive = false;
+                //testLockOnActive = false;
+                testCustomActive = false;
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("Line"))
+            {
+                testLineActive = true;
+                testCircleActive = false;
+                testConeActive = false;
+                testDonutActive = false;
+                //testLockOnActive = false;
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("Cone"))
+            {
+                testConeActive = true;
+                testCircleActive = false;
+                testLineActive = false;
+                testDonutActive = false;
+                //testLockOnActive = false;
+                testCustomActive = false;
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("Donut"))
+            {
+                testDonutActive = true;
+                testCircleActive = false;
+                testConeActive = false;
+                testLineActive = false;
+                //testLockOnActive = false;
+                testCustomActive = false;
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("Custom"))
+            {
+                testCustomActive = true;
+                testDonutActive = false;
+                testCircleActive = false;
+                testConeActive = false;
+                testLineActive = false;
+                //testLockOnActive = false;
+            }
+            /*
+            ImGui.SameLine();
+            if (ImGui.Button("Lock-On"))
+            {
+                testLockOnActive = true;
+                testCircleActive = false;
+                testConeActive = false;
+                testLineActive = false;
+                testDonutActive = false;
+            }
+            */
+            var player = _clientState.LocalPlayer;
+            if (testCircleActive)
+            {
+                ImGui.Spacing();
+                ImGui.SetNextItemWidth(150);
+                if (ImGui.SliderFloat("Radius", ref testCircleRadius, 1f, 15f, "%.1f"))
+                {
+                    _config.TestCircleRadius = testCircleRadius;
+                }
+                ImGui.Spacing();
+                PictoService.VfxRenderer.AddCircle($"{player!.EntityId}", player.Position, testCircleRadius, _config.OmenColor);
+            }
+            if (testConeActive)
+            {
+                ImGui.Spacing();
+                ImGui.SetNextItemWidth(150);
+                if (ImGui.SliderFloat("Radius", ref testConeRadius, 1f, 35f, "%.1f"))
+                {
+                    _config.TestConeRadius = testConeRadius;
+                }
+                ImGui.SetNextItemWidth(150);
+                if (ImGui.SliderFloat("Rotation", ref testConeRotation, 1f, 7.3f, "%.001f"))
+                {
+                    _config.TestConeRotation = testConeRotation;
+                }
+                ImGui.SetNextItemWidth(150);
+                if (ImGui.SliderInt("Angle Width", ref angleIndex, 1, AllowedAngles.Length - 1))
+                {
+                    testConeAngleWidth = AllowedAngles[angleIndex];
+                    _config.TestConeAngleWidth = testConeAngleWidth;
+                }
+                ImGui.SameLine();
+                ImGui.Text($"({AllowedAngles[angleIndex]}°)");
 
+                PictoService.VfxRenderer.AddCone($"{player!.EntityId}", player.Position, testConeRadius, testConeRotation, testConeAngleWidth, _config.OmenColor);
+            }
+            if (testLineActive)
+            {
+                ImGui.Spacing();
+                ImGui.SetNextItemWidth(150);
+                if (ImGui.SliderFloat("Length", ref testLineLength, 1f, 50, "%.1f"))
+                {
+                    _config.TestLineLength = testLineLength;
+                }
+
+                ImGui.SetNextItemWidth(150);
+                if (ImGui.SliderFloat("Width", ref testLineWidth, 1f, 15f, "%.1f"))
+                {
+                    _config.TestLineWidth = testLineWidth;
+                }
+
+                ImGui.SetNextItemWidth(150);
+                if (ImGui.SliderFloat("Rotation", ref testLineRotation, 1f, 7.3f, "%.001f"))
+                {
+                    _config.TestLineRotation = testLineRotation;
+                }
+
+                PictoService.VfxRenderer.AddLine($"{player!.EntityId}", player.Position, testLineLength, testLineWidth, testLineRotation, _config.OmenColor);
+            }
+            if (testDonutActive)
+            {
+                ImGui.Spacing();
+                ImGui.SetNextItemWidth(150);
+                if (ImGui.SliderFloat("Scale", ref testDonutInnerRadius, 0.1f, 25f, "%.1f"))
+                {
+                    testDonutOuterRadius = testDonutInnerRadius * 2f;
+                    _config.TestDonutInnerRadius = testDonutInnerRadius;
+                    _config.TestDonutOuterRadius = testDonutOuterRadius;
+                }
+                ImGui.Text($"Inner Radius: {testDonutInnerRadius:0.0}");
+                ImGui.Text($"Outer Radius: {testDonutOuterRadius:0.0}");
+                PictoService.VfxRenderer.AddDonut($"{player!.EntityId}", player.Position, testDonutInnerRadius, testDonutOuterRadius, _config.OmenColor);
+            }
+            if (testCustomActive)
+            {
+                var omenKeys = _data.GetExcelSheet<Omen>().Select(o => o.Path.ToMacroString()).ToArray();
+                var selectedIndex = (_config.SelectedOmenIndex >= 0 && _config.SelectedOmenIndex < omenKeys.Length) ? _config.SelectedOmenIndex : 0;
+                var selectedOmenName = omenKeys[selectedIndex];
+                ImGui.SetNextItemWidth(175);
+
+                if (ImGui.BeginCombo("##OmenSelect", omenKeys[selectedIndex]))
+                {
+                    for (var i = 0; i < omenKeys.Length; i++)
+                    {
+                        var isSelected = (i == selectedIndex);
+                        if (ImGui.Selectable(omenKeys[i], isSelected))
+                        {
+                            selectedIndex = i;
+                            _config.SelectedOmenIndex = i;
+                        }
+
+                        if (isSelected)
+                        {
+                            ImGui.SetItemDefaultFocus();
+                        }
+                    }
+                    ImGui.EndCombo();
+                }
+                ImGui.SameLine();
+                ImGui.TextColored(0xFFFFDCEB, "Omen Selection");
+                ImGui.SameLine();
+                ImGuiComponents.HelpMarker("The actual names of these omens are unknown, so unfortunately we're left with these keys as our only source of searching through to find any specific omens.");
+
+                PictoService.VfxRenderer.AddOmen(player!.EntityId.ToString(), selectedOmenName, player.Position, new Vector3(3), 0, _config.OmenColor);
+            }
+
+            /* TODO: fix - this crashes the game xdd
+            if (testLockOnActive)
+            {
+                ImGui.Spacing();
+                ImGui.SetNextItemWidth(150);
+                if (ImGui.SliderFloat("Scale", ref testLockOnScale, 0.1f, 10f, "%.1f"))
+                {
+                    _config.TestLockOnScale = testLockOnScale;
+                }
+                PictoService.VfxRenderer.AddLockon($"{player!.EntityId}", "tank_lockon01i", player, color: _config.OmenColor);
+            }
+            */
+        }
+        else
+        {
+            PictoService.VfxRenderer.Dispose();
+        }
+
+    }
     private static Vector4 HsvToRgb(float h, float s, float v)
     {
-        int i = (int)(h * 6f);
-        float f = h * 6f - i;
-        float p = v * (1 - s);
-        float q = v * (1 - f * s);
-        float t = v * (1 - (1 - f) * s);
+        var i = (int)(h * 6f);
+        var f = h * 6f - i;
+        var p = v * (1 - s);
+        var q = v * (1 - f * s);
+        var t = v * (1 - (1 - f) * s);
 
         return (i % 6) switch
         {
@@ -144,13 +429,15 @@ public class DutyWindow : Window
     public ushort _newDutyId;
     private Config.DutyEntries _newEntry = new();
     private readonly IClientState _clientState;
+    private readonly IPluginLog _log;
 
-    public DutyWindow(IDalamudPluginInterface pluginInterface, Config config, DutyOverride dutyOverride, IClientState clientState) : base("Duty Overrides")
+    public DutyWindow(IDalamudPluginInterface pluginInterface, Config config, DutyOverride dutyOverride, IClientState clientState, IPluginLog log) : base("Duty Overrides")
     {
         _pluginInterface = pluginInterface;
         _config = config;
         _dutyOverride = dutyOverride;
         _clientState = clientState;
+        _log = log;
         SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(666, 200),
@@ -162,13 +449,14 @@ public class DutyWindow : Window
 
     public override void Draw()
     {
-        using ImRaii.IEndObject table = ImRaii.Table("##DutyTable", 4,
+        using var table = ImRaii.Table("##DutyTable", 4,
             ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.RowBg |
             ImGuiTableFlags.BordersOuter | ImGuiTableFlags.BordersV |
             ImGuiTableFlags.NoSavedSettings);
 
         if (!table.Success)
         {
+            _log.Error("Failed to create Duty Overrides table.");
             return;
         }
         ImGui.TableSetupColumn("Enabled", ImGuiTableColumnFlags.WidthFixed, 50);
@@ -177,33 +465,28 @@ public class DutyWindow : Window
         ImGui.TableSetupColumn("Remove", ImGuiTableColumnFlags.WidthFixed, 100);
         ImGui.SameLine();
         ImGuiComponents.HelpMarker("Hold Ctrl and click to delete");
-
         ImGui.TableHeadersRow();
 
-        float colorComponentWidth = 60;
-
-        foreach ((ushort id, Config.DutyEntries entry) in _config.DutyColors.ToList())
+        var colorComponentWidth = 60;
+        foreach ((var id, var entry) in _config.DutyColors.ToList())
         {
-            using ImRaii.Id imId = ImRaii.PushId($"##DutyEntry_{id}");
+            using var imId = ImRaii.PushId($"##DutyEntry_{id}");
             ImGui.TableNextRow();
-
             ImGui.TableSetColumnIndex(0);
             ImGui.Checkbox($"##Enabled_{id}", ref entry.Enabled);
-
             ImGui.TableSetColumnIndex(1);
             ImGui.TextUnformatted(_dutyOverride.GetDutyName(id));
-
             ImGui.TableSetColumnIndex(2);
             ImGui.SetNextItemWidth(colorComponentWidth * 4);
-            ImGui.ColorEdit4($"##Color_{id}", ref entry.Color, ImGuiColorEditFlags.Float);
-
+            ImGui.ColorEdit4($"##Color_{id}", ref entry.OmenColor, ImGuiColorEditFlags.Float);
             ImGui.TableSetColumnIndex(3);
-            bool safety = ImGui.IsKeyDown(ImGuiKey.ModCtrl);
-            using (ImRaii.IEndObject _ = ImRaii.Disabled(!safety))
+            var safety = ImGui.IsKeyDown(ImGuiKey.ModCtrl);
+            using (var _ = ImRaii.Disabled(!safety))
             {
                 if (ImGui.Button("Remove##Btn", new Vector2(-1, 0)))
                 {
                     _config.DutyColors.Remove(id);
+                    _log.Information($"Removed duty override for '{entry.Name}' (Duty ID: {entry.DutyId}, Territory Type ID: {entry.TerritoryTypeId})");
                     return;
                 }
             }
@@ -219,13 +502,12 @@ public class DutyWindow : Window
 
         ImGui.TableSetColumnIndex(2);
         ImGui.SetNextItemWidth(colorComponentWidth * 4);
-        ImGui.ColorEdit4("##NewDutyColor", ref _newEntry.Color);
-
+        ImGui.ColorEdit4("##NewDutyColor", ref _newEntry.OmenColor);
         if (_newDutyId != 0)
         {
-            ushort addedId = _newDutyId;
-            Lumina.Excel.Sheets.ContentFinderCondition? row = _dutyOverride.GetDutyRow(addedId);
-            string name = row?.Name.ExtractText() ?? "Unknown";
+            var addedId = _newDutyId;
+            var row = _dutyOverride.GetDutyRow(addedId);
+            var name = row?.Name.ExtractText() ?? "Unknown";
             _newEntry.DutyId = addedId;
             _newEntry.Name = name;
             _newEntry.TerritoryTypeId = ((ushort)row!.Value.TerritoryType.Value.RowId);
@@ -233,21 +515,11 @@ public class DutyWindow : Window
             _newDutyId = 0;
             _newEntry = new Config.DutyEntries
             {
-                Color = _newEntry.Color
+                OmenColor = _newEntry.OmenColor
             };
 
             _pluginInterface.SavePluginConfig(_config);
         }
     }
-
-    public ushort? GetTerritoryType()
-    {
-        ushort territoryId = _clientState.TerritoryType;
-        if (territoryId == 0)
-        {
-            return null;
-        }
-
-        return _clientState.TerritoryType;
-    }
 }
+

@@ -9,37 +9,53 @@ namespace Chroma;
 
 public class Config : IPluginConfiguration
 {
-    public int Version { get; set; } = 1;
-    public float Speed { get; set; } = 0.05f;
     public bool Enabled = true;
-    public bool GlobalColor = false;
-    public bool ShowDutyWindow = false;
+    public Vector4 OmenColor = new(1.0f);
+    public bool IncludeFriendly = false;
     public bool RainbowMode = false;
-    public Vector4 Color = new(1.0f);
+    public float Speed = 0.05f;
     public Dictionary<ushort, DutyEntries> DutyColors = [];
+    public bool TestOmenEnabled = false;
+    public float TestCircleRadius = 1f;
+    public bool TestCircleActive = false;
+    public bool TestConeActive = false;
+    public float TestConeRadius = 1f;
+    public float TestConeRotation = 1f;
+    public int TestConeAngleWidth = 1;
+    public bool TestLineActive = false;
+    public float TestLineLength = 1f;
+    public float TestLineWidth = 1f;
+    public float TestLineRotation = 1f;
+    public bool TestDonutActive = false;
+    public float TestDonutInnerRadius = 1f;
+    public float TestDonutOuterRadius = 1f;
+    public bool TestCustomActive = false;
+    //public bool TestLockOnActive = false;
+    //public float TestLockOnScale = 1f;
 
+    public int Version { get; set; } = 1;
+    public int SelectedOmenIndex { get; set; } = 0;
     public class DutyEntries
     {
         public bool Enabled = true;
-        public Vector4 Color = new(1.0f);
+        public Vector4 OmenColor = new(1.0f);
         public ushort DutyId;
         public ushort TerritoryTypeId;
         public string Name = "";
     }
     public Vector4 GetActiveColor(ushort territoryType)
     {
-        foreach (KeyValuePair<ushort, DutyEntries> entries in DutyColors)
+        foreach (var entries in DutyColors)
         {
-            DutyEntries entry = entries.Value;
+            var entry = entries.Value;
             if (entry.Enabled && entry.TerritoryTypeId == territoryType)
             {
-                return entry.Color;
+                return entry.OmenColor;
             }
         }
 
-        return Color;
+        return OmenColor;
     }
-
 }
 public class ConfigManager : IDisposable
 {
@@ -52,22 +68,20 @@ public class ConfigManager : IDisposable
     {
         _cfgWindow = cfgWindow;
         _dutyWindow = dutyWindow;
-
         _windows.AddWindow(_cfgWindow);
         _windows.AddWindow(_dutyWindow);
-
         _ui = ui;
         _ui.Draw += _windows.Draw;
-        _ui.OpenMainUi += ToggleMainWindow;
-        _ui.OpenConfigUi += ToggleMainWindow;
+        _ui.OpenMainUi += ToggleChromaWindow;
+        _ui.OpenConfigUi += ToggleChromaWindow;
     }
 
-    public void ToggleMainWindow()
+    public void ToggleChromaWindow()
     {
         _cfgWindow.Toggle();
     }
 
-    public void ToggleConfigWindow()
+    public void ToggleDutyWindow()
     {
         _dutyWindow.Toggle();
     }
@@ -75,8 +89,8 @@ public class ConfigManager : IDisposable
     public void Dispose()
     {
         _ui.Draw -= _windows.Draw;
-        _ui.OpenMainUi -= ToggleMainWindow;
-        _ui.OpenConfigUi -= ToggleConfigWindow;
+        _ui.OpenMainUi -= ToggleChromaWindow;
+        _ui.OpenConfigUi -= ToggleDutyWindow;
         GC.SuppressFinalize(this);
     }
 }
