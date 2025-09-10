@@ -299,7 +299,7 @@ public class ConfigWindow : Window
                 ImGui.Separator();
                 ImGui.Spacing();
                 ImGui.SetNextItemWidth(150);
-                if (ImGui.SliderFloat("Radius", ref testConeRadius, 1f, 35f, "%.1f"))
+                if (ImGui.SliderFloat("Length", ref testConeRadius, 1f, 35f, "%.1f"))
                 {
                     _config.TestConeRadius = testConeRadius;
                 }
