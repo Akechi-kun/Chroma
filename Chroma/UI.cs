@@ -434,21 +434,6 @@ public class ConfigWindow : Window
                 _log.Error($"Failed to open GitHub Issues page: {ex.Message}");
             }
         }
-        if (ImGui.IsMouseClicked(ImGuiMouseButton.Right))
-        {
-            try
-            {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = "https://github.com/Akechi-kun/Chroma",
-                    UseShellExecute = true
-                });
-            }
-            catch (Exception ex)
-            {
-                _log.Error($"Failed to open GitHub repo: {ex.Message}");
-            }
-        }
         if (ImGui.IsItemHovered())
         {
             ImGui.SetTooltip("Report Issue");
