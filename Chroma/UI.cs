@@ -174,12 +174,6 @@ public class ConfigWindow : Window
                 _config.Speed = speed;
             }
             ImGui.Unindent();
-            var a = _config.OmenColor.W;
-            var t = (float)ImGui.GetTime();
-            var hue = (t * speed) % 1.0f;
-            var rgb = HsvToRgb(hue, 1.0f, 1.0f);
-            rgb.W = a;
-            _config.OmenColor = rgb;
         }
     }
     private void DrawDutyOverrides()
@@ -491,24 +485,6 @@ public class ConfigWindow : Window
         {
             ImGui.SetTooltip("Sponsor");
         }
-    }
-    private static Vector4 HsvToRgb(float h, float s, float v)
-    {
-        var i = (int)(h * 6f);
-        var f = h * 6f - i;
-        var p = v * (1 - s);
-        var q = v * (1 - f * s);
-        var t = v * (1 - (1 - f) * s);
-
-        return (i % 6) switch
-        {
-            0 => new Vector4(v, t, p, 1),
-            1 => new Vector4(q, v, p, 1),
-            2 => new Vector4(p, v, t, 1),
-            3 => new Vector4(p, q, v, 1),
-            4 => new Vector4(t, p, v, 1),
-            _ => new Vector4(v, p, q, 1),
-        };
     }
 }
 
