@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Chroma;
 
+//all credit to Wah (@2e) for this code.. thanks Wah <3
 internal static partial class ImGuiGroup
 {
     public record GroupBoxOptions
@@ -45,7 +46,7 @@ internal static partial class ImGuiGroup
 
             options.HeaderTextAction?.Invoke();
 
-            // This prevents rounding issues caused by ImGui flooring the cursor position after items
+            //this prevents rounding issues caused by ImGui flooring the cursor position after items
             ImGui.Indent();
             ImGui.Unindent();
         }
@@ -119,7 +120,7 @@ internal static partial class ImGuiGroup
     [StructLayout(LayoutKind.Explicit)]
     public struct ImGuiWindow
     {
-        // 0x118 is the start of ImGuiWindowTempData
+        //0x118 is the start of ImGuiWindowTempData
         [FieldOffset(0x130)] public Vector2 CursorMaxPos;
         [FieldOffset(0xC)] public ImGuiWindowFlags Flags;
         [FieldOffset(0xD5)] public byte HasCloseButton;

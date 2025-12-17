@@ -43,6 +43,7 @@ public class Config : IPluginConfiguration
         public ushort TerritoryTypeId;
         public string Name = "";
     }
+
     public Vector4 GetActiveColor(ushort territoryType)
     {
         foreach (var entries in DutyColors)

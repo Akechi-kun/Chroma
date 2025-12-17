@@ -19,7 +19,7 @@ public class ConfigWindow : Window
     private readonly Config _config;
     private readonly Manager _manager;
     private readonly DutyWindow _dutyWindow;
-    private readonly IClientState _clientState;
+    private readonly IObjectTable _objectTable;
     private readonly IDataManager _data;
     private readonly IPluginLog _log;
 
@@ -47,13 +47,13 @@ public class ConfigWindow : Window
     //private bool testLockOnActive = false;
     //private float testLockOnScale = 1f;
 
-    public ConfigWindow(IDalamudPluginInterface pluginInterface, Config config, Manager manager, DutyWindow dutyWindow, IClientState clientState, IDataManager data, IPluginLog log) : base($"Chroma v{pluginInterface.Manifest.AssemblyVersion}")
+    public ConfigWindow(IDalamudPluginInterface pluginInterface, Config config, Manager manager, DutyWindow dutyWindow, IObjectTable objectTable, IDataManager data, IPluginLog log) : base($"Chroma v{pluginInterface.Manifest.AssemblyVersion}")
     {
         _pluginInterface = pluginInterface;
         _config = config;
         _manager = manager;
         _dutyWindow = dutyWindow;
-        _clientState = clientState;
+        _objectTable = objectTable;
         _data = data;
         _log = log;
         Size = new Vector2(340, 510);
@@ -272,7 +272,7 @@ public class ConfigWindow : Window
                 testDonutActive = false;
             }
             */
-            var player = _clientState.LocalPlayer;
+            var player = _objectTable.LocalPlayer;
             if (testCircleActive)
             {
                 ImGui.Spacing();
@@ -480,15 +480,15 @@ public class DutyWindow : Window
     private readonly DutyOverride _dutyOverride;
     public ushort _newDutyId;
     private Config.DutyEntries _newEntry = new();
-    private readonly IClientState _clientState;
+    private readonly IObjectTable _objectTable;
     private readonly IPluginLog _log;
 
-    public DutyWindow(IDalamudPluginInterface pluginInterface, Config config, DutyOverride dutyOverride, IClientState clientState, IPluginLog log) : base("Duty Overrides")
+    public DutyWindow(IDalamudPluginInterface pluginInterface, Config config, DutyOverride dutyOverride, IObjectTable objectTable, IPluginLog log) : base("Duty Overrides")
     {
         _pluginInterface = pluginInterface;
         _config = config;
         _dutyOverride = dutyOverride;
-        _clientState = clientState;
+        _objectTable = objectTable;
         _log = log;
         SizeConstraints = new WindowSizeConstraints
         {

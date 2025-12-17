@@ -15,18 +15,26 @@ public sealed class Chroma : IDalamudPlugin
     private readonly ConfigManager _ui;
     private readonly Commands _cmds;
 
-    public Chroma(IDalamudPluginInterface pluginInterface, IFramework framework, IGameInteropProvider interop, ICommandManager cmds, IDataManager data, IClientState clientState, IPluginLog log)
+    public Chroma(
+        IDalamudPluginInterface pluginInterface, 
+        IFramework framework,
+        IGameInteropProvider interop,
+        ICommandManager cmds,
+        IDataManager data,
+        IObjectTable objectTable,
+        IClientState clientState, 
+        IPluginLog log)
     {
         PictoService.Initialize(pluginInterface);
         _framework = framework;
         _config = pluginInterface.GetPluginConfig() as Config ?? new Config();
         Util Util = new(interop, _config);
         _pluginInterface = pluginInterface;
-        _manager = new Manager(_config, Util, clientState);
+        _manager = new Manager(_config, Util, objectTable, clientState);
         _manager.Initialize();
         DutyOverride dutyOverride = new(data);
-        DutyWindow dutyWindow = new(pluginInterface, _config, dutyOverride, clientState, log);
-        ConfigWindow cfgWindow = new(pluginInterface, _config, _manager, dutyWindow, clientState, data, log);
+        DutyWindow dutyWindow = new(pluginInterface, _config, dutyOverride, objectTable, log);
+        ConfigWindow cfgWindow = new(pluginInterface, _config, _manager, dutyWindow, objectTable, data, log);
         _ui = new ConfigManager(cfgWindow, dutyWindow, pluginInterface.UiBuilder);
         _cmds = new Commands(cmds, _ui, _manager, _config);
         _cmds.Register();

@@ -4,11 +4,12 @@ using System;
 
 namespace Chroma;
 
-public class Manager(Config config, Util Util, IClientState clientState) : IDisposable
+public class Manager(Config config, Util Util, IObjectTable objectTable, IClientState clientState) : IDisposable
 {
     private readonly Config _config = config;
     private readonly Util _util = Util;
-    private readonly IClientState _clientState = clientState;
+    private readonly IObjectTable _objectTable = objectTable;
+	private readonly IClientState _clientState = clientState;
 
     public bool Enabled
     {

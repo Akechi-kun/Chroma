@@ -35,86 +35,68 @@ public class Commands(ICommandManager cmd, ConfigManager ui, Manager mgr, Config
 
     private void HandleCommand(string command, string args)
     {
-        if (args == "enable")
+        switch (args)
         {
-            _manager.Enabled = true;
-            return;
-        }
+            case "enable":
+                _manager.Enabled = true;
+                break;
 
-        if (args == "disable")
-        {
-            _manager.Enabled = false;
-            _config.RainbowMode = false;
-            return;
-        }
-        if (args == "duties")
-        {
-            _ui.ToggleDutyWindow();
-            return;
-        }
-        if (args == "red")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.OmenColor = new Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-            return;
-        }
-        if (args == "green")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.OmenColor = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
-            return;
-        }
-        if (args == "blue")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.OmenColor = new Vector4(0.0f, 0.0f, 1.0f, 1.0f);
-            return;
-        }
-        if (args == "yellow")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.OmenColor = new Vector4(1.0f, 1.0f, 0.0f, 1.0f);
-            return;
-        }
-        if (args == "purple")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.OmenColor = new Vector4(0.5f, 0.0f, 0.5f, 1.0f);
-            return;
-        }
-        if (args == "pink")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.OmenColor = new Vector4(1.0f, 0.75f, 0.8f, 1.0f);
-            return;
-        }
-        if (args == "white")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.OmenColor = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-            return;
-        }
-        if (args == "rainbow")
-        {
-            _manager.Enabled = true;
-            _config.RainbowMode = false;
-            _config.RainbowMode = true;
-            return;
-        }
+            case "disable":
+                _manager.Enabled = false;
+                _config.RainbowMode = false;
+                break;
 
-        if (string.IsNullOrEmpty(args))
-        {
-            _ui.ToggleChromaWindow();
-            return;
+            case "duties":
+                _ui.ToggleDutyWindow();
+                break;
+
+            case "red":
+                SetColor(1f, 0f, 0f);
+                break;
+
+            case "green":
+                SetColor(0f, 1f, 0f);
+                break;
+
+            case "blue":
+                SetColor(0f, 0f, 1f);
+                break;
+
+            case "yellow":
+                SetColor(1f, 1f, 0f);
+                break;
+
+            case "purple":
+                SetColor(0.5f, 0f, 0.5f);
+                break;
+
+            case "pink":
+                SetColor(1f, 0.75f, 0.8f);
+                break;
+
+            case "white":
+                SetColor(1f, 1f, 1f);
+                break;
+
+            case "rainbow":
+                _manager.Enabled = true;
+                _config.RainbowMode = true;
+                break;
+
+            case "":
+            case null:
+                _ui.ToggleChromaWindow();
+                break;
         }
     }
+
+    private void SetColor(float r, float g, float b)
+    {
+        _manager.Enabled = true;
+        _config.RainbowMode = false;
+        _config.OmenColor = new Vector4(r, g, b, 1f);
+    }
+
     public void Dispose()
     {
         _cmds.RemoveHandler(CommandName);
