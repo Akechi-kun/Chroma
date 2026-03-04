@@ -4,15 +4,14 @@ using Dalamud.Utility.Signatures;
 using SourOmen.Structs;
 using System;
 
-namespace Chroma;
+namespace Chroma.Core;
 
 public class Util : IDisposable
 {
     public bool Enabled => CreateHook.IsEnabled;
-
-    private readonly Config _config;
+    private readonly Config _cfg;
+    public unsafe delegate void VfxSpawnEvent(VfxResourceInstance* instance, bool isEnemy);
     public event VfxSpawnEvent? OnSpawn;
-    public unsafe delegate void VfxSpawnEvent(VfxResourceInstance* instance);
 
     [Signature("E8 ?? ?? ?? ?? 48 89 84 FB ?? ?? ?? ?? 48 85 C0 74 53", DetourName = nameof(CreateDetour))]
     private readonly Hook<CreateDelegate> CreateHook = null!;
@@ -21,33 +20,29 @@ public class Util : IDisposable
     public Util(IGameInteropProvider interop, Config config)
     {
         interop.InitializeFromAttributes(this);
-        _config = config;
+        _cfg = config;
     }
 
     public void SetEnabled(bool enable)
     {
         if (enable)
-        {
             CreateHook.Enable();
-        }
         else
-        {
             CreateHook.Disable();
-        }
     }
 
     private unsafe VfxData* CreateDetour(uint a1, nint a2, nint a3, float a4, int a5, int a6, float a7, int a8, char isEnemy, char a10)
     {
-        var Vfx = CreateHook.Original(a1, a2, a3, a4, a5, a6, a7, a8, isEnemy, a10);
-        if ((_config.IncludeFriendly ? isEnemy >= 0 : isEnemy == 1) && Vfx != null)
+        var vfx = CreateHook.Original(a1, a2, a3, a4, a5, a6, a7, a8, isEnemy, a10);
+        if (vfx != null)
         {
-            var instance = Vfx->Instance;
+            var instance = vfx->Instance;
             if (instance != null)
             {
-                OnSpawn?.Invoke(instance);
+                OnSpawn?.Invoke(instance, isEnemy == 1);
             }
         }
-        return Vfx;
+        return vfx;
     }
 
     public void Dispose()

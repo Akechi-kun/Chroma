@@ -1,6 +1,11 @@
-﻿using Dalamud.Bindings.ImGui;
+﻿using Chroma.Core;
+using Chroma.UI;
+using Dalamud.Bindings.ImGui;
+using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using ECommons;
+using ECommons.DalamudServices;
 using Pictomancy;
 using System.Numerics;
 
@@ -8,60 +13,54 @@ namespace Chroma;
 
 public sealed class Chroma : IDalamudPlugin
 {
-    private readonly IDalamudPluginInterface _pluginInterface;
-    private readonly IFramework _framework;
-    private readonly Config _config;
-    private readonly Manager _manager;
-    private readonly ConfigManager _ui;
+    [PluginService] internal static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
+    private readonly Config _cfg;
+    private readonly Manager _mgr;
     private readonly Commands _cmds;
+    private readonly Main _ui;
 
-    public Chroma(
-        IDalamudPluginInterface pluginInterface, 
-        IFramework framework,
-        IGameInteropProvider interop,
-        ICommandManager cmds,
-        IDataManager data,
-        IObjectTable objectTable,
-        IClientState clientState, 
-        IPluginLog log)
+    public Chroma(IGameInteropProvider interop)
     {
-        PictoService.Initialize(pluginInterface);
-        _framework = framework;
-        _config = pluginInterface.GetPluginConfig() as Config ?? new Config();
-        Util Util = new(interop, _config);
-        _pluginInterface = pluginInterface;
-        _manager = new Manager(_config, Util, objectTable, clientState);
-        _manager.Initialize();
-        DutyOverride dutyOverride = new(data);
-        DutyWindow dutyWindow = new(pluginInterface, _config, dutyOverride, objectTable, log);
-        ConfigWindow cfgWindow = new(pluginInterface, _config, _manager, dutyWindow, objectTable, data, log);
-        _ui = new ConfigManager(cfgWindow, dutyWindow, pluginInterface.UiBuilder);
-        _cmds = new Commands(cmds, _ui, _manager, _config);
+        ECommonsMain.Init(PluginInterface, this);
+        PictoService.Initialize(PluginInterface);
+        _cfg = PluginInterface.GetPluginConfig() as Config ?? new Config();
+        Util Util = new(interop, _cfg);
+        _mgr = new Manager(_cfg, Util);
+        _mgr.Initialize();
+        DutyOverride dutyOverride = new();
+        DutyWindow dutyWindow = new(_cfg, dutyOverride);
+        ChromaWindow cfgWindow = new(_cfg, _mgr, dutyWindow);
+        _ui = new Main(cfgWindow, dutyWindow, PluginInterface.UiBuilder);
+        _cmds = new Commands(_ui, _mgr, _cfg);
         _cmds.Register();
-        _framework.Update += OnUpdate;
+        Svc.Framework.Update += OnUpdate;
     }
 
     private void OnUpdate(IFramework framework)
     {
-        if (_config.RainbowMode)
+        if (_cfg.RainbowMode)
         {
-            var a = _config.OmenColor.W;
             var t = (float)ImGui.GetTime();
-            var hue = (t * _config.Speed) % 1.0f;
-            var rgb = HsvToRgb(hue, 1.0f, 1.0f);
-            rgb.W = a;
-            _config.OmenColor = rgb;
+            var hue1 = (t * _cfg.Speed) % 1.0f;
+            var hue2 = (hue1 + 0.5f) % 1.0f;
+            var global = _cfg.GlobalColor;
+            var nh = _cfg.NonHostileColor;
+            var rgb1 = HsvToRgb(hue1, 1.0f, 1.0f);
+            rgb1.W = global.W;
+            _cfg.GlobalColor = rgb1;
+            var rgb2 = HsvToRgb(hue2, 1.0f, 1.0f);
+            rgb2.W = nh.W;
+            _cfg.NonHostileColor = rgb2;
         }
     }
-
     public void Dispose()
     {
+        ECommonsMain.Dispose();
         PictoService.Dispose();
-        _manager.Dispose();
+        _mgr.Dispose();
         _ui.Dispose();
-        _cmds.Dispose();
-        _pluginInterface.SavePluginConfig(_config);
-        _framework.Update -= OnUpdate;
+        PluginInterface.SavePluginConfig(_cfg);
+        Svc.Framework.Update -= OnUpdate;
     }
 
     private static Vector4 HsvToRgb(float h, float s, float v)

@@ -1,27 +1,28 @@
-﻿using Dalamud.Game.Command;
-using Dalamud.Plugin.Services;
+﻿using Chroma.Core;
+using Dalamud.Game.Command;
+using ECommons.DalamudServices;
 using System;
 using System.Numerics;
 
 namespace Chroma;
 
-public class Commands(ICommandManager cmd, ConfigManager ui, Manager mgr, Config cfg) : IDisposable
+public class Commands(Main ui, Manager mgr, Config cfg) : IDisposable
 {
-    private const string CommandName = "/chroma";
-
-    private readonly ICommandManager _cmds = cmd;
-    private readonly ConfigManager _ui = ui;
-    private readonly Manager _manager = mgr;
-    private readonly Config _config = cfg;
+    private const string Name = "/chroma";
+    private readonly Main _ui = ui;
+    private readonly Manager _mgr = mgr;
+    private readonly Config _cfg = cfg;
 
     public void Register()
     {
-        _cmds.AddHandler(CommandName, new CommandInfo(HandleCommand)
+        Svc.Commands.AddHandler(Name, new CommandInfo(HandleCommand)
         {
-            HelpMessage = "Opens the UI. \n" +
-            "/chroma duties -> Opens the Duty Overrides menu.\n" +
+            HelpMessage = "Toggles Chroma menu. \n" +
+            "/chroma duties -> Toggles Duty Overrides menu.\n" +
             "/chroma enable -> Enables Chroma. \n" +
             "/chroma disable -> Disables Chroma. \n" +
+            "/chroma friendly enable -> Enables Non-Hostile omens.\n" +
+            "/chroma friendly disable -> Disables Non-Hostile omens.\n" +
             "/chroma red -> Sets global color to red. \n" +
             "/chroma green -> Sets global color to green. \n" +
             "/chroma blue -> Sets global color to blue. \n" +
@@ -38,68 +39,88 @@ public class Commands(ICommandManager cmd, ConfigManager ui, Manager mgr, Config
         switch (args)
         {
             case "enable":
-                _manager.Enabled = true;
+                _mgr.Enabled = true;
+                Svc.Log.Information("Chroma enabled.");
                 break;
 
             case "disable":
-                _manager.Enabled = false;
-                _config.RainbowMode = false;
-                break;
-
-            case "duties":
-                _ui.ToggleDutyWindow();
+                _mgr.Enabled = false;
+                _cfg.RainbowMode = false;
+                Svc.Log.Information("Chroma disabled.");
                 break;
 
             case "red":
                 SetColor(1f, 0f, 0f);
+                Svc.Log.Information("Global color set to red.");
                 break;
 
             case "green":
                 SetColor(0f, 1f, 0f);
+                Svc.Log.Information("Global color set to green.");
                 break;
 
             case "blue":
                 SetColor(0f, 0f, 1f);
+                Svc.Log.Information("Global color set to blue.");
                 break;
 
             case "yellow":
                 SetColor(1f, 1f, 0f);
+                Svc.Log.Information("Global color set to yellow.");
                 break;
 
             case "purple":
                 SetColor(0.5f, 0f, 0.5f);
+                Svc.Log.Information("Global color set to purple.");
                 break;
 
             case "pink":
                 SetColor(1f, 0.75f, 0.8f);
+                Svc.Log.Information("Global color set to pink.");
                 break;
 
             case "white":
                 SetColor(1f, 1f, 1f);
+                Svc.Log.Information("Global color set to white.");
                 break;
 
             case "rainbow":
-                _manager.Enabled = true;
-                _config.RainbowMode = true;
+                _mgr.Enabled = true;
+                _cfg.RainbowMode = true;
+                Svc.Log.Information("Rainbow mode enabled.");
+                break;
+
+            case "duties":
+                _ui.ToggleDuty();
+                break;
+
+            case "friendly enable":
+                _cfg.NonHostile = true;
+                Svc.Log.Information($"Non-Hostile omens enabled.");
+                break;
+
+            case "friendly disable":
+                _cfg.NonHostile = false;
+                Svc.Log.Information($"Non-Hostile omens disabled.");
                 break;
 
             case "":
             case null:
-                _ui.ToggleChromaWindow();
+                _ui.ToggleMain();
                 break;
         }
     }
 
     private void SetColor(float r, float g, float b)
     {
-        _manager.Enabled = true;
-        _config.RainbowMode = false;
-        _config.OmenColor = new Vector4(r, g, b, 1f);
+        _mgr.Enabled = true;
+        _cfg.RainbowMode = false;
+        _cfg.GlobalColor = new Vector4(r, g, b, 1f);
     }
 
     public void Dispose()
     {
-        _cmds.RemoveHandler(CommandName);
+        Svc.Commands.RemoveHandler(Name);
         GC.SuppressFinalize(this);
     }
 }

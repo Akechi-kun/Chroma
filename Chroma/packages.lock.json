@@ -14,11 +14,17 @@
         "resolved": "1.2.39",
         "contentHash": "fcFN01tDTIQqDuTwr1jUQK/geofiwjG5DycJQOnC72i1SsLAk1ELe+apBOuZ11UMQG8YKFZG1FgvjZPbqHyatg=="
       },
+      "ECommons": {
+        "type": "Direct",
+        "requested": "[3.1.0.27, )",
+        "resolved": "3.1.0.27",
+        "contentHash": "PkA+aVOf+fHaxxpWM8jZCwBVX3TvNY+rJd7amKYZuVdeF7qpR2jPs0ZYQMejeIY4jUOdRKhaGErqq3ZV9HXZjg=="
+      },
       "Pictomancy": {
         "type": "Direct",
-        "requested": "[0.0.2, )",
-        "resolved": "0.0.2",
-        "contentHash": "th7LcwtMgGWbhfZu7cyKYQKIOpRHzC/O9YvbWy5FSEs0zs1rgC/jgFg1MuX6F4XireR3XJgmg+RcHY+TCKBpsw==",
+        "requested": "[0.0.5, )",
+        "resolved": "0.0.5",
+        "contentHash": "7ZcXLnw8oD6Crw4AqwXpoE7CE5w1zMjz8ok7gvq+lRqo2ehPoTP9qnImzcjI4cHRNOMNaeAuq2LFUuP6ty837g==",
         "dependencies": {
           "SharpDX.D3DCompiler": "4.2.0",
           "SharpDX.Direct2D1": "4.2.0",
