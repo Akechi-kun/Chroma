@@ -10,30 +10,30 @@ namespace Chroma;
 
 public class Config : IPluginConfiguration
 {
-    public bool Enabled = true; //global enable/disable for plugin
+    public bool Enabled = true;
     public float Alpha = 0f;
-    public Vector4 GlobalColor = new(1f, 1f, 1f, 1f); //global color
-    public bool NonHostile = false; //option select to include Non-Hostile omens in the color override
-    public Vector4 NonHostileColor = new(1f, 1f, 1f, 1f); //friendly color will be global color by default
-    public bool RainbowMode = false; //rainbow mode for omens - basically just cycles through the hue spectrum
-    public bool WhiteMode = false; //white mode for omens - sets omen color to white and ignores Alpha slider due to render reasons
-    public float Speed = 0.05f; //default speed of the hue change while in rainbow mode
-    public Dictionary<ushort, DutyEntries> DutyColors = []; //dict for duty specific colors - key for duty's territoryid
-    public bool TestingEnabled = false; //testing options for pre-rendering omens in the config menu
-    public float TestCircleRadius = 1f; //default radius for circle omen test render
-    public bool TestCircleActive = false; //testing circle omen is currently active
-    public bool TestConeActive = false; //testing cone omen is currently active
-    public float TestConeRadius = 1f; //default radius for cone omen test render
-    public float TestConeRotation = 1f; //default rotation for cone omen test render
-    public int TestConeAngleWidth = 1; //default angle width for cone omen test render
-    public bool TestLineActive = false; //testing line omen is currently active
-    public float TestLineLength = 1f; //default length for line omen test render
-    public float TestLineWidth = 1f; //default width for line omen test render
-    public float TestLineRotation = 1f; //default rotation for line omen test render
-    public bool TestDonutActive = false; //testing donut omen is currently active
-    public float TestDonutInnerRadius = 1f; //default inner radius for donut omen test render 
-    public float TestDonutOuterRadius = 1f; //default outer radius for donut omen test render
-    public bool TestCustomActive = false; //testing custom omen is currently active
+    public Vector4 GlobalColor = new(1f, 1f, 1f, 1f);
+    public bool NonHostile = false;
+    public Vector4 NonHostileColor = new(1f, 1f, 1f, 1f);
+    public bool RainbowMode = false;
+    public bool WhiteMode = false;
+    public float Speed = 0.05f;
+    public Dictionary<ushort, DutyEntries> DutyColors = [];
+    public bool TestingEnabled = false;
+    public float TestCircleRadius = 1f;
+    public bool TestCircleActive = false;
+    public bool TestConeActive = false;
+    public float TestConeRadius = 1f;
+    public float TestConeRotation = 1f;
+    public int TestConeAngleWidth = 1;
+    public bool TestLineActive = false;
+    public float TestLineLength = 1f;
+    public float TestLineWidth = 1f;
+    public float TestLineRotation = 1f;
+    public bool TestDonutActive = false;
+    public float TestDonutInnerRadius = 1f;
+    public float TestDonutOuterRadius = 1f;
+    public bool TestCustomActive = false;
 
     public int Version { get; set; } = 1;
     public int SelectedOmenIndex { get; set; } = 0;

@@ -68,7 +68,7 @@ public class DutyWindow : Window
             var safety = ImGui.IsKeyDown(ImGuiKey.ModCtrl);
             using (var _ = ImRaii.Disabled(!safety))
             {
-                if (ImGui.Button("Remove##Btn", new Vector2(-1, 0)))
+                if (ImGuiEx.Button("Remove##Btn", new Vector2(-1, 0)))
                 {
                     _cfg.DutyColors.Remove(id);
                     Svc.Log.Information($"Removed duty override for '{entry.Name}' (Duty ID: {entry.DutyId}, Territory Type ID: {entry.TerritoryTypeId})");
@@ -192,7 +192,7 @@ public class PopupList<T>(string id, Func<T, bool, bool> drawItem)
                 ImGui.EndChild();
             }
 
-            if (ImGui.Button("Close") || ImGui.IsKeyPressed(ImGuiKey.Escape))
+            if (ImGuiEx.Button("Close") || ImGui.IsKeyPressed(ImGuiKey.Escape))
             {
                 IsOpen = false;
                 ImGui.CloseCurrentPopup();
