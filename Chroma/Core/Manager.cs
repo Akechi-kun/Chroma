@@ -28,8 +28,7 @@ public class Manager(Config config, Util util) : IDisposable
 
     private unsafe void OnVfxSpawn(VfxResourceInstance* instance, bool isEnemy)
     {
-        if (!_cfg.Enabled)
-            return;
+        if (!_cfg.Enabled) return;
 
         var color = _cfg.GlobalColor;
         if (isEnemy)

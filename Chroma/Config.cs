@@ -11,10 +11,12 @@ namespace Chroma;
 public class Config : IPluginConfiguration
 {
     public bool Enabled = true; //global enable/disable for plugin
-    public Vector4 GlobalColor = new(1.0f); //global color
+    public float Alpha = 0f;
+    public Vector4 GlobalColor = new(1f, 1f, 1f, 1f); //global color
     public bool NonHostile = false; //option select to include Non-Hostile omens in the color override
-    public Vector4 NonHostileColor = new(1.0f); //friendly color will be global color by default
+    public Vector4 NonHostileColor = new(1f, 1f, 1f, 1f); //friendly color will be global color by default
     public bool RainbowMode = false; //rainbow mode for omens - basically just cycles through the hue spectrum
+    public bool WhiteMode = false; //white mode for omens - sets omen color to white and ignores Alpha slider due to render reasons
     public float Speed = 0.05f; //default speed of the hue change while in rainbow mode
     public Dictionary<ushort, DutyEntries> DutyColors = []; //dict for duty specific colors - key for duty's territoryid
     public bool TestingEnabled = false; //testing options for pre-rendering omens in the config menu
@@ -32,8 +34,6 @@ public class Config : IPluginConfiguration
     public float TestDonutInnerRadius = 1f; //default inner radius for donut omen test render 
     public float TestDonutOuterRadius = 1f; //default outer radius for donut omen test render
     public bool TestCustomActive = false; //testing custom omen is currently active
-    public bool ExtraRender = false; //option select for increasing thickness with ImGui
-    public float Thickness = 0.1f; //default thickness for ImGui rendering when ExtraRender is enabled
 
     public int Version { get; set; } = 1;
     public int SelectedOmenIndex { get; set; } = 0;
@@ -44,20 +44,6 @@ public class Config : IPluginConfiguration
         public ushort DutyId;
         public ushort TerritoryTypeId;
         public string Name = "";
-    }
-
-    public Vector4 GetActiveColor(ushort territoryType)
-    {
-        foreach (var entries in DutyColors)
-        {
-            var entry = entries.Value;
-            if (entry.Enabled && entry.TerritoryTypeId == territoryType)
-            {
-                return entry.OmenColor;
-            }
-        }
-
-        return GlobalColor;
     }
 }
 public class Main : IDisposable

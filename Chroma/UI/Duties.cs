@@ -1,8 +1,8 @@
 ﻿using Dalamud.Bindings.ImGui;
-using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using ECommons.DalamudServices;
+using ECommons.ImGuiMethods;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using System;
@@ -49,7 +49,7 @@ public class DutyWindow : Window
         ImGui.TableSetupColumn("Color", ImGuiTableColumnFlags.WidthStretch, 2.5f);
         ImGui.TableSetupColumn("Remove", ImGuiTableColumnFlags.WidthFixed, 100);
         ImGui.SameLine();
-        ImGuiComponents.HelpMarker("Hold Ctrl and click to delete");
+        ImGuiEx.HelpMarker("Hold Ctrl and click to delete");
         ImGui.TableHeadersRow();
 
         var colorComponentWidth = 60;

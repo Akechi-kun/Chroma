@@ -38,19 +38,36 @@ public sealed class Chroma : IDalamudPlugin
 
     private void OnUpdate(IFramework framework)
     {
+        if (!_cfg.Enabled && !_cfg.TestingEnabled)
+            return;
+
+        if (!_cfg.WhiteMode)
+        {
+            _cfg.GlobalColor.W = _cfg.Alpha;
+        }
+
         if (_cfg.RainbowMode)
         {
             var t = (float)ImGui.GetTime();
-            var hue1 = (t * _cfg.Speed) % 1.0f;
-            var hue2 = (hue1 + 0.5f) % 1.0f;
-            var global = _cfg.GlobalColor;
-            var nh = _cfg.NonHostileColor;
-            var rgb1 = HsvToRgb(hue1, 1.0f, 1.0f);
-            rgb1.W = global.W;
-            _cfg.GlobalColor = rgb1;
-            var rgb2 = HsvToRgb(hue2, 1.0f, 1.0f);
-            rgb2.W = nh.W;
-            _cfg.NonHostileColor = rgb2;
+            var up = (t * _cfg.Speed) % 1.0f;
+            var down = (up + 0.5f) % 1.0f;
+            var h = RGB(up, 1.0f, 1.0f);
+            h.W = _cfg.Alpha;
+            _cfg.GlobalColor = h;
+
+            var nh = RGB(down, 1.0f, 1.0f);
+            nh.W = _cfg.Alpha;
+            _cfg.NonHostileColor = nh;
+        }
+        else if (_cfg.WhiteMode)
+        {
+            var white = new Vector4(10f, 10f, 10f, 10f);
+            _cfg.GlobalColor = white;
+
+            if (_cfg.NonHostile)
+            {
+                _cfg.NonHostileColor = white;
+            }
         }
     }
     public void Dispose()
@@ -63,7 +80,7 @@ public sealed class Chroma : IDalamudPlugin
         Svc.Framework.Update -= OnUpdate;
     }
 
-    private static Vector4 HsvToRgb(float h, float s, float v)
+    private static Vector4 RGB(float h, float s, float v)
     {
         var i = (int)(h * 6);
         var f = h * 6 - i;
