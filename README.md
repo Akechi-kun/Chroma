@@ -57,10 +57,10 @@
 5. Click **_Save and Close_**.
 
 ### Step **_3_**: _Install Plugin_
-1. Open the **Dalamud Plugin Installer** (type `/xlplugins` in chat).
-2. Select the **All Plugins** tab.
-3. Search for **Chroma**.
-4. Click **Install**.
+1. Open the **_Dalamud Plugin Installer_** (type _`/xlplugins`_ in chat).
+2. Select the **_All Plugins_** tab.
+3. Search for **_Chroma_**.
+4. Click **_Install_**.
 
 ### ✅ **_Done!_**
 
