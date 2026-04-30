@@ -375,7 +375,7 @@ public class ChromaWindow : Window
             if (ImGuiEx.IconButtonWithText(Icon.Explosion, "Clear"))
             {
                 SetOmen("");
-                PictoService.VfxRenderer.Dispose();
+                PctService.VfxRenderer.Dispose();
             }
             ImGui.SameLine();
             SetTooltip
@@ -438,7 +438,7 @@ public class ChromaWindow : Window
                         "The length the omen being tested.",
                         v => _cfg.TestCircleRadius = v
                     );
-                PictoService.VfxRenderer.AddCircle
+                PctService.VfxRenderer.AddCircle
                     (
                         $"{player.EntityId}",
                         player.Position,
@@ -481,7 +481,7 @@ public class ChromaWindow : Window
                         "The cone-angle width of the omen being tested.",
                         DefaultColor
                     );
-                PictoService.VfxRenderer.AddCone
+                PctService.VfxRenderer.AddCone
                     (
                         $"{player.EntityId}",
                         player.Position,
@@ -522,7 +522,7 @@ public class ChromaWindow : Window
                         "The direction the omen being tested is facing.",
                         v => _cfg.TestLineRotation = v
                     );
-                PictoService.VfxRenderer.AddLine
+                PctService.VfxRenderer.AddLine
                     (
                         $"{player.EntityId}",
                         player.Position,
@@ -564,7 +564,7 @@ public class ChromaWindow : Window
                         "Outer radius of the omen being tested (outer unsafe zone).",
                         DefaultColor
                     );
-                PictoService.VfxRenderer.AddDonut
+                PctService.VfxRenderer.AddDonut
                     (
                         $"{player.EntityId}",
                         player.Position,
@@ -609,7 +609,7 @@ public class ChromaWindow : Window
                         "The actual names of these omens are unknown, so keys are used instead to select them.",
                         DefaultColor
                     );
-                PictoService.VfxRenderer.AddOmen
+                PctService.VfxRenderer.AddOmen
                     (
                         player.EntityId.ToString(),
                         name,
@@ -622,7 +622,7 @@ public class ChromaWindow : Window
         }
         else
         {
-            PictoService.VfxRenderer.Dispose();
+            PctService.VfxRenderer.Dispose();
         }
             #endregion
     }

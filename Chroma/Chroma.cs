@@ -22,7 +22,7 @@ public sealed class Chroma : IDalamudPlugin
     public Chroma(IGameInteropProvider interop)
     {
         ECommonsMain.Init(PluginInterface, this);
-        PictoService.Initialize(PluginInterface);
+        PctService.Initialize(PluginInterface);
         _cfg = PluginInterface.GetPluginConfig() as Config ?? new Config();
         Util Util = new(interop, _cfg);
         _mgr = new Manager(_cfg, Util);
@@ -73,7 +73,7 @@ public sealed class Chroma : IDalamudPlugin
     public void Dispose()
     {
         ECommonsMain.Dispose();
-        PictoService.Dispose();
+        PctService.Dispose();
         _mgr.Dispose();
         _ui.Dispose();
         PluginInterface.SavePluginConfig(_cfg);
