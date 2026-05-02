@@ -16,17 +16,17 @@
       },
       "ECommons": {
         "type": "Direct",
-        "requested": "[3.2.0.6, )",
-        "resolved": "3.2.0.6",
-        "contentHash": "ZONTpNsOLTlX0OPhBU/mHK9EWqmxgc2ZPwZtmV0rucsNyARXjeNsaGC9bcumGPBVpICTQBqeg4V1iew3OdmGYQ=="
+        "requested": "[3.2.0.13, )",
+        "resolved": "3.2.0.13",
+        "contentHash": "7S85hhmzMoARE3q+Elf+dQaasVu/k0NNld7uffzmQqKCqdWjGWv+kxD28JL0zU17aK6k57IfSklNqbq3XLYVuw=="
       },
       "Pictomancy": {
         "type": "Direct",
-        "requested": "[1.0.0, )",
-        "resolved": "1.0.0",
-        "contentHash": "nhkWEQnH1S6Dpqt3WX1XCLledXbjndYl9mSZV16LiiyflQTi/6PaiwmTs1ctOufmcn/BVnr1TBFlIUjmsAgobA==",
+        "requested": "[1.0.3, )",
+        "resolved": "1.0.3",
+        "contentHash": "S/fLDASI7BcGjGNelma9O6Fd5ljBX6ZX5mm8OrnUuVorBnTFTe+A/zHX/V59+ZQhdezAa2b95NhGWtdVN+lZcQ==",
         "dependencies": {
-          "KamiToolKit": "1.1.0",
+          "KamiToolKit": "1.1.2",
           "SharpDX.D3DCompiler": "4.2.0",
           "SharpDX.Direct2D1": "4.2.0",
           "SharpDX.Direct3D11": "4.2.0",
@@ -35,8 +35,8 @@
       },
       "KamiToolKit": {
         "type": "Transitive",
-        "resolved": "1.1.0",
-        "contentHash": "I/oPFBRZpxqBpXbOm6rTFO44a0u09POng07hm1OP6MzLwAiYVBiGQJNWYWbfIRwjmHgOXyXujUA6ZoEoQHxFZw==",
+        "resolved": "1.1.2",
+        "contentHash": "pyydp+XFd+E00uEXXd44GGNCCH2uAK1ndwjLVHKVrHg059g65ry+92a5UdDISWZRJMhK+LcDpDUPSijnFavCvQ==",
         "dependencies": {
           "SixLabors.ImageSharp": "3.1.12"
         }
