@@ -16,15 +16,15 @@
       },
       "ECommons": {
         "type": "Direct",
-        "requested": "[3.2.0.13, )",
-        "resolved": "3.2.0.13",
-        "contentHash": "7S85hhmzMoARE3q+Elf+dQaasVu/k0NNld7uffzmQqKCqdWjGWv+kxD28JL0zU17aK6k57IfSklNqbq3XLYVuw=="
+        "requested": "[3.2.1.26, )",
+        "resolved": "3.2.1.26",
+        "contentHash": "llUY80afPoU11VXKwAKhiAByFHSiiF5OD2BdIeYsHuCz+FRJoku39zga0br7THGY8PzhfH3hVOx8zdFW8d8iEA=="
       },
       "Pictomancy": {
         "type": "Direct",
-        "requested": "[1.0.3, )",
-        "resolved": "1.0.3",
-        "contentHash": "S/fLDASI7BcGjGNelma9O6Fd5ljBX6ZX5mm8OrnUuVorBnTFTe+A/zHX/V59+ZQhdezAa2b95NhGWtdVN+lZcQ==",
+        "requested": "[1.0.10, )",
+        "resolved": "1.0.10",
+        "contentHash": "xHRbKtdyT15T58oZH4QSHdsnjlRMc3Vi4DbrnnIWeeZfDX3yyBu0CiVYUR37ALIGcOd1sl0bpX/9GpLl+PEMTg==",
         "dependencies": {
           "KamiToolKit": "1.1.2",
           "SharpDX.D3DCompiler": "4.2.0",

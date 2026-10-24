@@ -1,79 +1,127 @@
-﻿using Chroma.UI;
+﻿using Chroma.Omens;
 using Dalamud.Configuration;
-using Dalamud.Interface;
-using Dalamud.Interface.Windowing;
-using System;
+using ECommons.DalamudServices;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace Chroma;
 
 public class Config : IPluginConfiguration
 {
+    public const int CurrentVersion = 2;
+
+    public int Version { get; set; } = CurrentVersion;
     public bool Enabled = true;
-    public float Alpha = 0f;
-    public Vector4 GlobalColor = new(1f, 1f, 1f, 1f);
+    public Vector4 GlobalColor = Colors.NoTint;
+    public float Alpha = Colors.DefaultAlpha;
     public bool NonHostile = false;
-    public Vector4 NonHostileColor = new(1f, 1f, 1f, 1f);
+    public Vector4 NonHostileColor = Colors.NoTint;
     public bool RainbowMode = false;
     public bool WhiteMode = false;
-    public float Speed = 0.05f;
+    public float Speed = Colors.DefaultSpeed;
+    public bool CastProgress = false;
+    public Vector4 CastProgressColor = Colors.DefaultCastProgressColor;
     public Dictionary<ushort, DutyEntries> DutyColors = [];
-    public bool TestingEnabled = false;
-    public float TestCircleRadius = 1f;
-    public bool TestCircleActive = false;
-    public bool TestConeActive = false;
-    public float TestConeRadius = 1f;
-    public float TestConeRotation = 1f;
-    public int TestConeAngleWidth = 1;
-    public bool TestLineActive = false;
-    public float TestLineLength = 1f;
-    public float TestLineWidth = 1f;
-    public float TestLineRotation = 1f;
-    public bool TestDonutActive = false;
-    public float TestDonutInnerRadius = 1f;
-    public float TestDonutOuterRadius = 1f;
-    public bool TestCustomActive = false;
 
-    public int Version { get; set; } = 1;
-    public int SelectedOmenIndex { get; set; } = 0;
+    public bool TestingEnabled = false;
+    public bool TestNonHostile = false;
+    public float TestCircleRadius = 5f;
+    public float TestConeRadius = 10f;
+    public float TestConeRotation = 0f;
+    public int TestConeAngleWidth = OmenTester.DefaultConeAngle;
+    public float TestLineLength = 20f;
+    public float TestLineWidth = 5f;
+    public float TestLineRotation = 0f;
+    public float TestDonutOuterRadius = 10f;
+    public float TestDonutRatio = 0.5f;
+    public string TestCustomOmen = "general_1bf";
+    public float TestCustomScale = 3f;
+
     public class DutyEntries
     {
         public bool Enabled = true;
-        public Vector4 OmenColor = new(1.0f);
+        public Vector4 OmenColor = Colors.NoTint;
         public ushort DutyId;
         public ushort TerritoryTypeId;
         public string Name = "";
     }
-}
-public class Main : IDisposable
-{
-    private readonly IUiBuilder _ui;
-    private readonly WindowSystem _windows = new();
-    private readonly ChromaWindow _cfgWindow;
-    private readonly DutyWindow _dutyWindow;
 
-    public Main(ChromaWindow cfgWindow, DutyWindow dutyWindow, IUiBuilder ui)
+    public bool HasDefaultColors =>
+        GlobalColor == Colors.NoTint &&
+        NonHostileColor == Colors.NoTint &&
+        Alpha == Colors.DefaultAlpha &&
+        Speed == Colors.DefaultSpeed &&
+        !RainbowMode && !WhiteMode && !NonHostile;
+
+    public DutyEntries? FindDuty(uint territory)
     {
-        _cfgWindow = cfgWindow;
-        _dutyWindow = dutyWindow;
-        _windows.AddWindow(_cfgWindow);
-        _windows.AddWindow(_dutyWindow);
-        _ui = ui;
-        _ui.Draw += _windows.Draw;
-        _ui.OpenMainUi += ToggleMain;
-        _ui.OpenConfigUi += ToggleMain;
+        foreach (var entry in DutyColors.Values)
+        {
+            if (entry.Enabled && entry.TerritoryTypeId == territory)
+                return entry;
+        }
+        return null;
     }
 
-    public void ToggleMain() => _cfgWindow.Toggle();
-    public void ToggleDuty() => _dutyWindow.Toggle();
-
-    public void Dispose()
+    public void SetColor(Vector4 color)
     {
-        _ui.Draw -= _windows.Draw;
-        _ui.OpenMainUi -= ToggleMain;
-        _ui.OpenConfigUi -= ToggleDuty;
-        GC.SuppressFinalize(this);
+        GlobalColor = Colors.WithAlpha(color, 1f);
+        RainbowMode = false;
+        WhiteMode = false;
+    }
+
+    public void SetRainbowMode(bool enabled)
+    {
+        RainbowMode = enabled;
+        if (enabled)
+            WhiteMode = false;
+    }
+
+    public void SetWhiteMode(bool enabled)
+    {
+        WhiteMode = enabled;
+        if (enabled)
+            RainbowMode = false;
+    }
+
+    public void ResetColors()
+    {
+        GlobalColor = Colors.NoTint;
+        NonHostileColor = Colors.NoTint;
+        Alpha = Colors.DefaultAlpha;
+        Speed = Colors.DefaultSpeed;
+        RainbowMode = false;
+        WhiteMode = false;
+        NonHostile = false;
+    }
+
+    public void Save() => Svc.PluginInterface.SavePluginConfig(this);
+
+    public static Config Load()
+    {
+        var config = Svc.PluginInterface.GetPluginConfig() as Config ?? new Config();
+        if (config.Version < CurrentVersion)
+        {
+            config.Migrate();
+            config.Save();
+        }
+        return config;
+    }
+
+    private void Migrate()
+    {
+        if (Alpha < Colors.MinAlpha)
+            Alpha = Colors.DefaultAlpha;
+        if (Colors.IsOverbright(GlobalColor))
+            GlobalColor = Colors.NoTint;
+        if (Colors.IsOverbright(NonHostileColor))
+            NonHostileColor = Colors.NoTint;
+        if (!OmenTester.ConeAngles.Contains(TestConeAngleWidth))
+            TestConeAngleWidth = OmenTester.DefaultConeAngle;
+
+        GlobalColor = Colors.WithAlpha(GlobalColor, 1f);
+        NonHostileColor = Colors.WithAlpha(NonHostileColor, 1f);
+        Version = CurrentVersion;
     }
 }
-
