@@ -14,7 +14,7 @@ internal sealed class SearchCombo<T>(Func<IReadOnlyList<T>> getItems, Func<T, st
 
     private string _query = string.Empty;
     private string? _filteredQuery;
-    private List<T> _filteredItems = [];
+    private IReadOnlyList<T> _filteredItems = [];
 
     public bool Draw(string id, string preview, float width, Func<T, bool> isSelected, out T? picked)
     {
@@ -50,9 +50,10 @@ internal sealed class SearchCombo<T>(Func<IReadOnlyList<T>> getItems, Func<T, st
             return;
 
         _filteredQuery = _query;
+        var items = getItems();
         _filteredItems = _query.Length == 0
-            ? [.. getItems()]
-            : [.. getItems().Where(item => getLabel(item).Contains(_query, StringComparison.OrdinalIgnoreCase))];
+            ? items
+            : [.. items.Where(item => getLabel(item).Contains(_query, StringComparison.OrdinalIgnoreCase))];
     }
 
     private bool DrawList(Func<T, bool> isSelected, out T? picked)

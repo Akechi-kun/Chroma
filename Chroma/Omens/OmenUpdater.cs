@@ -1,12 +1,11 @@
-﻿using Dalamud.Game.ClientState.Objects.Types;
-using Dalamud.Plugin.Services;
+﻿using Dalamud.Plugin.Services;
 using ECommons.DalamudServices;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using Pictomancy.VfxDraw;
 using SourOmen.Structs;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using NativeCharacter = FFXIVClientStructs.FFXIV.Client.Game.Character.Character;
 
 namespace Chroma.Omens;
 
@@ -63,13 +62,21 @@ public sealed unsafe class OmenUpdater : IDisposable
     private void UpdateVisibleOmens()
     {
         _visibleOmens.Clear();
+        var characters = CharacterManager.Instance();
+        if (characters == null)
+            return;
+
         var territory = Svc.ClientState.TerritoryType;
-        foreach (var gameObject in Svc.Objects)
+        var hostileColor = Colors.GetOmenColor(_config, hostile: true, territory);
+        var nonHostileColor = Colors.GetOmenColor(_config, hostile: false, territory);
+
+        foreach (var pointer in characters->BattleCharas)
         {
-            if (gameObject is not IBattleChara caster)
+            var caster = pointer.Value;
+            if (caster == null)
                 continue;
 
-            var omen = (nint)CurrentOmen(caster);
+            var omen = (nint)caster->Vfx.VfxData[OmenSlot].Value;
             if (omen == 0 || !_trackedOmens.TryGetValue(omen, out var tracked))
                 continue;
 
@@ -77,16 +84,15 @@ public sealed unsafe class OmenUpdater : IDisposable
             if (!tracked.Hostile && !_config.NonHostile)
                 continue;
 
-            var color = TargetColor(caster, tracked, territory);
+            var color = tracked.Hostile ? WithCastWarning(hostileColor, caster) : nonHostileColor;
             if (color != tracked.AppliedColor && Apply((VfxData*)omen, color))
                 _trackedOmens[omen] = tracked with { AppliedColor = color };
         }
     }
 
-    private Vector4 TargetColor(IBattleChara caster, TrackedOmen tracked, uint territory)
+    private Vector4 WithCastWarning(Vector4 baseColor, BattleChara* caster)
     {
-        var baseColor = Colors.GetOmenColor(_config, tracked.Hostile, territory);
-        if (!_config.CastProgress || !tracked.Hostile)
+        if (!_config.CastProgress)
             return baseColor;
 
         var warningColor = Colors.WithAlpha(_config.CastProgressColor, baseColor.W);
@@ -95,6 +101,9 @@ public sealed unsafe class OmenUpdater : IDisposable
 
     private void ForgetExpiredOmens()
     {
+        if (_visibleOmens.Count == _trackedOmens.Count)
+            return;
+
         _expiredOmens.Clear();
         foreach (var omen in _trackedOmens.Keys)
         {
@@ -106,14 +115,11 @@ public sealed unsafe class OmenUpdater : IDisposable
             _trackedOmens.Remove(omen);
     }
 
-    private static VfxData* CurrentOmen(IBattleChara caster)
+    private static float CastProgress(BattleChara* caster)
     {
-        var character = (NativeCharacter*)caster.Address;
-        return character == null ? null : (VfxData*)character->Vfx.VfxData[OmenSlot].Value;
+        var cast = caster->CastInfo;
+        return cast.IsCasting && cast.TotalCastTime > 0f ? Math.Clamp(cast.CurrentCastTime / cast.TotalCastTime, 0f, 1f) : 0f;
     }
-
-    private static float CastProgress(IBattleChara caster) =>
-        caster.IsCasting && caster.TotalCastTime > 0f ? Math.Clamp(caster.CurrentCastTime / caster.TotalCastTime, 0f, 1f) : 0f;
 
     private static bool Apply(VfxData* omen, Vector4 color)
     {
